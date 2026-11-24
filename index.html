@@ -1093,7 +1093,7 @@ function renderCal() {
     let cls = 'cm-d', st = `animation-delay:${Math.min((lead + i) * 12, 420)}ms`, kc = '', tip = d.toDateString();
     if (logged(dd)) { const n = net(dd), lv = level(n); counts[lv]++; logged0++; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = fmt(n); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
     if (k === key(t)) cls += ' today'; if (fut) cls += ' fut';
-    cells.push(`<button class="${cls}" style="${st}" data-k="${k}" title="${esc(tip)}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span></button>`);
+    cells.push(`<button class="${cls}" style="${st}" data-k="${k}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span></button>`);
   }
   $('#cmGrid').innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="cm-h">${x}</div>`).join('') + '<div class="cm-d out"></div>'.repeat(lead) + cells.join('');
   $('#cmSub').textContent = past ? `${logged0} of ${past} days logged · ${counts[0]} on target` : 'Nothing to show yet';
