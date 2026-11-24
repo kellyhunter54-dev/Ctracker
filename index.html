@@ -77,7 +77,9 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:14;stroke-linecap:round}
 .ring .trk{stroke:var(--card2)}
-.ring .prog{stroke:var(--acc);transition:stroke-dashoffset 1.1s var(--ease),stroke .4s}
+.ring .prog,.ring .burn{transition:stroke-dasharray 1.1s var(--ease),stroke-dashoffset 1.1s var(--ease),stroke .4s,opacity .3s}
+.ring .prog{stroke:var(--acc)}
+.ring .burn{stroke:var(--good);transition-delay:.25s}
 .ring .ovr{stroke:var(--over);transition:stroke-dashoffset 1.1s var(--ease) .3s}
 .ring.is-over .prog{stroke:var(--over);opacity:.35}
 .ring .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
@@ -459,7 +461,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     <div class="card hero-card">
       <div class="hero">
         <div class="ring" id="ring">
-          <svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="88"/><circle class="prog" id="ringProg" cx="100" cy="100" r="88"/><circle class="ovr" id="ringOver" cx="100" cy="100" r="88"/></svg>
+          <svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="88"/><circle class="prog" id="ringProg" cx="100" cy="100" r="88"/><circle class="burn" id="ringBurn" cx="100" cy="100" r="88"/><circle class="ovr" id="ringOver" cx="100" cy="100" r="88"/></svg>
           <div class="mid"><div class="big num" id="remain">0</div><div class="cap" id="remainCap">kcal left</div></div>
         </div>
         <div class="stats3">
@@ -792,8 +794,10 @@ addEventListener('hashchange', route);
 
 /* ================= TODAY ================= */
 const C = 2 * Math.PI * 88;
-$('#ringProg').style.strokeDasharray = $('#ringOver').style.strokeDasharray = C;
-$('#ringProg').style.strokeDashoffset = $('#ringOver').style.strokeDashoffset = C;
+$('#ringOver').style.strokeDasharray = C; $('#ringOver').style.strokeDashoffset = C;
+// draw an arc from fraction a to b of the ring
+const arc = (el, a, b) => { const len = Math.max(0, b - a) * C; el.style.strokeDasharray = `${len} ${C}`; el.style.strokeDashoffset = -a * C; el.style.opacity = len > .5 ? 1 : 0 };
+arc($('#ringProg'), 0, 0); arc($('#ringBurn'), 0, 0);
 
 const dayLabel = d => {
   const diff = Math.round((d - today()) / 864e5);
@@ -810,7 +814,10 @@ function renderToday() {
   const over = rem < 0, p = Math.max(0, Math.min(1, n / st.goal));
   $('#ring').classList.toggle('is-over', over);
   requestAnimationFrame(() => {
-    $('#ringProg').style.strokeDashoffset = C * (1 - p);
+    // orange = what you ate; green covers the end of it by what you burned; what's left of the orange is your net
+    const fF = Math.min(1, food / st.goal), fN = Math.max(0, Math.min(1, n / st.goal));
+    if (over) { arc($('#ringProg'), 0, 1); arc($('#ringBurn'), 0, 0) }
+    else { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), fN, fF) }
     $('#ringOver').style.strokeDashoffset = over ? C * (1 - Math.min(1, -rem / st.goal)) : C;
   });
   tween($('#remain'), Math.abs(rem));
