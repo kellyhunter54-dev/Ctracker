@@ -266,6 +266,18 @@ details.more[open] summary::before{content:"− "}
 .cm-pop li.no span:nth-child(2){color:var(--mute)}
 .cm-pop .pf{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
 
+/* my stats */
+.me-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center}
+.me-day .big2{font-size:clamp(44px,10vw,64px);font-weight:600;line-height:1;color:var(--acc);margin:4px 0}
+.me-track{height:10px;border-radius:99px;background:var(--card2);overflow:hidden;margin:10px 0 8px}
+.me-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--acc) 60%,var(--card2)),var(--acc));transition:width 1.2s var(--ease)}
+.me-ends{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--mute);flex-wrap:wrap}
+.me-kpis{margin-top:0}
+.me-duo>.card{margin-bottom:14px}
+.cm-d.pre{opacity:.4}
+.cm-d.start::after{content:"Start";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);font:600 9px Inter,sans-serif;background:var(--acc);color:#fff;padding:2px 6px;border-radius:99px;letter-spacing:.02em}
+.pf-date{width:170px!important;text-align:left!important}
+
 /* recipes */
 [hidden]{display:none!important}
 .rgrid{display:grid;gap:14px}
@@ -384,6 +396,9 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
   /* goals */
   .goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
   #v-calendar{max-width:980px}
+  .me-duo{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+  .me-duo>.card{margin:0}
+  .me-hero{padding:28px 32px}
   .cm-card{padding:22px}
   .cm-grid{gap:10px}
   .cm-d{aspect-ratio:auto;min-height:96px;padding:12px 12px 10px;border-radius:14px}
@@ -493,6 +508,24 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     </div>
   </section>
 
+  <!-- MY STATS -->
+  <section class="view" id="v-me">
+    <header class="top"><h1>My stats<span class="sub" id="meSub"></span></h1></header>
+    <div class="card me-hero">
+      <div class="me-day"><div class="lbl">Day</div><div class="num big2" id="meDay">1</div><div class="lbl" id="meSince"></div></div>
+      <div class="me-goal">
+        <div class="row" style="justify-content:space-between;align-items:baseline"><span class="lbl">Weight goal</span><b class="num" id="mePct"></b></div>
+        <div class="me-track"><i id="meFill"></i></div>
+        <div class="me-ends num"><span id="meStartW"></span><span id="meNowW"></span><span id="meGoalW"></span></div>
+      </div>
+    </div>
+    <div class="kpis me-kpis" id="meKpis"></div>
+    <div class="duo me-duo">
+      <div class="card"><h2>Body</h2><div id="meBody" style="margin-top:6px"></div></div>
+      <div class="card"><h2>Weight since you started <span class="tot num" id="meWch"></span></h2><div class="fig" id="jFig" style="height:240px"><svg id="jSvg"></svg><div class="tip"></div></div></div>
+    </div>
+  </section>
+
   <!-- CALENDAR -->
   <section class="view" id="v-calendar">
     <header class="top"><h1 id="cmTitle">Calendar<span class="sub" id="cmSub"></span></h1>
@@ -523,7 +556,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 
   <!-- GOALS -->
   <section class="view" id="v-goals">
-    <header class="top"><h1>Goals<span class="sub">Your daily targets</span></h1><a class="ibtn mob-only" href="#preferences" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></a></header>
+    <header class="top"><h1>Goals<span class="sub">Your daily targets</span></h1><a class="ibtn mob-only" href="#me" aria-label="My stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a><a class="ibtn mob-only" href="#preferences" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></a></header>
     <div class="goal-grid"><div class="gcol">
     <div class="card">
       <h2>Daily targets</h2>
@@ -563,6 +596,18 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
       <h2>Units</h2>
       <div style="margin-top:8px">
         <div class="setrow"><div><div>Measurement system</div><div class="muted" id="unitHint"></div></div><div class="seg" id="unitSeg"><button data-v="kg">Metric</button><button data-v="lb">Imperial</button></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Your profile</h2>
+      <p class="muted" style="margin:6px 0 4px">Used for your stats page and to fill in the goal calculator.</p>
+      <div style="margin-top:4px">
+        <div class="setrow"><div><div>Start date</div><div class="muted">Days before this are not counted</div></div><input class="inp num pf-date" type="date" data-prof="start"></div>
+        <div class="setrow"><span>Starting weight <span class="muted uLbl2"></span></span><input class="inp num" type="number" inputmode="decimal" step="0.1" data-prof="startWeight" placeholder="optional"></div>
+        <div class="setrow"><span>Sex</span><div class="seg" id="profSex"><button data-v="f">Female</button><button data-v="m">Male</button></div></div>
+        <div class="setrow"><span>Birthday</span><input class="inp num pf-date" type="date" data-prof="dob"></div>
+        <div class="setrow" id="phM"><span>Height (cm)</span><input class="inp num" type="number" inputmode="decimal" data-prof="heightCm"></div>
+        <div class="setrow" id="phI"><span>Height (ft, in)</span><div class="row" style="gap:6px"><input class="inp num" style="width:64px" type="number" inputmode="numeric" data-prof="ft" aria-label="Feet"><input class="inp num" style="width:64px" type="number" inputmode="decimal" data-prof="in" aria-label="Inches"></div></div>
       </div>
     </div>
     <div class="card">
@@ -615,11 +660,12 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
   <a href="#diary" data-v="diary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Diary</a>
   <a href="#stats" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Progress</a>
   <a href="#calendar" data-v="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar</a>
+  <a href="#me" data-v="me" class="desk-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>My stats</a>
   <a href="#foods" data-v="foods"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Foods</a>
   <a href="#recipes" data-v="recipes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M4 19a2 2 0 0 1 2-2h13M9 8h6M9 11h4"/></svg>Recipes</a>
   <a href="#goals" data-v="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Goals</a>
   <a href="#preferences" data-v="preferences" class="desk-only nav-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</a>
-  <div class="keys desk-only"><div><kbd>A</kbd> Add food</div><div><kbd>E</kbd> Add exercise</div><div><kbd>←</kbd><kbd>→</kbd> Change day</div><div><kbd>T</kbd> Today</div><div><kbd>1</kbd>-<kbd>7</kbd> Switch page</div></div>
+  <div class="keys desk-only"><div><kbd>A</kbd> Add food</div><div><kbd>E</kbd> Add exercise</div><div><kbd>←</kbd><kbd>→</kbd> Change day</div><div><kbd>T</kbd> Today</div><div><kbd>1</kbd>-<kbd>8</kbd> Switch page</div></div>
 </nav></div>
 
 <div class="scrim" id="scrim"></div>
@@ -631,7 +677,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 /* ---------- state ---------- */
 const KEY = 'ctracker.v1';
 const MEALS = [['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner'],['snack','Snacks']];
-const DEF = {settings:{goal:2000,protein:130,carbs:200,fat:65,water:8,unit:'kg',theme:'system',goalWeight:null,bands:[100,600,1000]},days:{},foods:[],recipes:[]};
+const DEF = {settings:{goal:2000,protein:130,carbs:200,fat:65,water:8,unit:'kg',theme:'system',goalWeight:null,bands:[100,600,1000],profile:{}},days:{},foods:[],recipes:[]};
 let S;
 const load = () => { try { S = JSON.parse(localStorage.getItem(KEY)) || null } catch(e) { S = null } S = S || structuredClone(DEF); S.settings = {...DEF.settings, ...S.settings}; S.days = S.days || {}; S.foods = S.foods || []; S.recipes = S.recipes || []; };
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch(e) {} };
@@ -704,13 +750,13 @@ const confirmSheet = (title, msg, okLabel, fn) => {
 
 /* ---------- routing ---------- */
 let cur = today();
-const VIEWS = ['diary','stats','calendar','foods','recipes','goals','preferences'];
+const VIEWS = ['diary','stats','calendar','me','foods','recipes','goals','preferences'];
 const route = () => {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'diary';
   document.body.dataset.view = v;
   $$('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
-  $$('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.v === v || (v === 'preferences' && a.dataset.v === 'goals' && innerWidth < 1000)));
-  if (v === 'diary') renderToday(); if (v === 'stats') renderStats(); if (v === 'foods') renderFoods(); if (v === 'goals') renderGoals(); if (v === 'recipes') renderRecipes(); if (v === 'preferences') renderPrefs(); if (v === 'calendar') renderCal();
+  $$('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.v === v || ((v === 'preferences' || v === 'me') && a.dataset.v === 'goals' && innerWidth < 1000)));
+  if (v === 'diary') renderToday(); if (v === 'stats') renderStats(); if (v === 'foods') renderFoods(); if (v === 'goals') renderGoals(); if (v === 'recipes') renderRecipes(); if (v === 'preferences') renderPrefs(); if (v === 'calendar') renderCal(); if (v === 'me') renderMe();
   scrollTo({top:0});
 };
 addEventListener('hashchange', route);
@@ -961,9 +1007,9 @@ function renderStats() {
   // days in range
   const days = [];
   for (let d = new Date(R.s); d <= R.e; d = addDays(d, 1)) { const k = key(d), dd = S.days[k]; days.push({d: new Date(d), k, fut: d > t, log: logged(dd), net: logged(dd) ? net(dd) : 0, food: logged(dd) ? sum(dd.entries, e => e.cal) : 0}) }
-  const L = days.filter(x => x.log), past = days.filter(x => !x.fut);
+  const sk0 = startKey(), L = days.filter(x => x.log && (!sk0 || x.k >= sk0)), past = days.filter(x => !x.fut && (!sk0 || x.k >= sk0));
   const avg = L.length ? sum(L, x => x.net) / L.length : 0;
-  const onT = L.filter(x => x.net <= goal).length;
+  const onT = L.filter(x => level(x.net) === 0).length;
   const bal = sum(L, x => goal - x.net);
   const perU = S.settings.unit === 'lb' ? 3500 : 7700;
   // previous period avg for delta
@@ -1041,11 +1087,11 @@ const bars = {data: [], goal: 2000, draw() {
   svg.onpointerleave = () => { tip.style.opacity = 0; hov.setAttribute('opacity', 0) };
   svg.onclick = e => { const rc = e.target.closest('[data-i]'); if (rc && D[+rc.dataset.i].k) { cur = parse(D[+rc.dataset.i].k); location.hash = 'diary' } };
 }};
-const wline = {data: [], range: [new Date(), new Date()], draw() {
-  const svg = $('#wSvg'), fig = $('#wFig'), tip = fig.querySelector('.tip'), W = svg.clientWidth, H = svg.clientHeight;
+const mkW = (sv, fg) => ({data: [], range: [new Date(), new Date()], draw() {
+  const svg = $(sv), fig = $(fg), gid = sv.slice(1) + 'g', tip = fig.querySelector('.tip'), W = svg.clientWidth, H = svg.clientHeight;
   if (!W) return;
   const D = this.data;
-  if (D.length < 1) { svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="14" fill="var(--faint)">Log your weight on the Today page to see a trend</text>`; svg.onpointermove = null; return }
+  if (D.length < 1) { svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" font-size="14" fill="var(--faint)">Log your weight in the Diary to see a trend</text>`; svg.onpointermove = null; return }
   const l = 42, r = 12, t = 14, b = 26, iw = W - l - r, ih = H - t - b;
   const gw = S.settings.goalWeight ? toUnit(S.settings.goalWeight) : null;
   let lo = Math.min(...D.map(x => x.w)), hi = Math.max(...D.map(x => x.w));
@@ -1057,11 +1103,11 @@ const wline = {data: [], range: [new Date(), new Date()], draw() {
   const path = pts.map((p,i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('');
   const area = path + `L${pts.at(-1)[0]},${t + ih}L${pts[0][0]},${t + ih}Z`;
   const ticks = [lo + padv, (lo + hi) / 2, hi - padv];
-  let h = `<defs><linearGradient id="wg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".22"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>`;
+  let h = `<defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".22"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>`;
   h += ticks.map(v => `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="var(--faint)">${v.toFixed(1)}</text>`).join('');
   h += `<text x="${l}" y="${H - 6}" font-size="11" fill="var(--faint)">${MON[s.getMonth()]} ${s.getDate()}</text><text x="${W - r}" y="${H - 6}" text-anchor="end" font-size="11" fill="var(--faint)">${MON[e.getMonth()]} ${e.getDate()}</text>`;
   if (gw) h += `<line x1="${l}" x2="${W - r}" y1="${Y(gw)}" y2="${Y(gw)}" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${W - r}" y="${Y(gw) - 6}" text-anchor="end" font-size="11" fill="var(--good)">Goal ${gw.toFixed(1)}</text>`;
-  if (pts.length > 1) h += `<path d="${area}" fill="url(#wg)" style="animation:viewIn .8s var(--ease)"/><path class="wline" pathLength="1000" d="${path}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if (pts.length > 1) h += `<path d="${area}" fill="url(#${gid})" style="animation:viewIn .8s var(--ease)"/><path class="wline" pathLength="1000" d="${path}" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   h += pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="${pts.length > 40 ? 2.5 : 4}" fill="var(--acc)" stroke="var(--card)" stroke-width="2"/>`).join('');
   h += `<circle id="wh" r="6" fill="none" stroke="var(--acc)" stroke-width="2" opacity="0"/><rect x="${l}" y="${t}" width="${iw}" height="${ih}" fill="transparent"/>`;
   svg.innerHTML = h;
@@ -1074,9 +1120,82 @@ const wline = {data: [], range: [new Date(), new Date()], draw() {
     tip.style.left = Math.min(Math.max(p[0], 50), W - 50) + 'px'; tip.style.top = p[1] - 10 + 'px'; tip.style.opacity = 1;
   };
   svg.onpointerleave = () => { tip.style.opacity = 0; wh.setAttribute('opacity', 0) };
-}};
-const ro = new ResizeObserver(() => { if (document.body.dataset.view === 'stats') { bars.draw(); wline.draw() } });
-ro.observe($('#calFig')); ro.observe($('#wFig'));
+}});
+const wline = mkW('#wSvg', '#wFig'), jline = mkW('#jSvg', '#jFig');
+const ro = new ResizeObserver(() => { const v = document.body.dataset.view; if (v === 'stats') { bars.draw(); wline.draw() } if (v === 'me') jline.draw() });
+ro.observe($('#calFig')); ro.observe($('#wFig')); ro.observe($('#jFig'));
+
+/* ================= MY STATS ================= */
+const prof = () => S.settings.profile || {};
+const startKey = () => prof().start || '';
+const ageOf = dob => { if (!dob) return null; const b = parse(dob), t = today(); let a = t.getFullYear() - b.getFullYear(); if (t < new Date(t.getFullYear(), b.getMonth(), b.getDate())) a--; return a };
+function renderMe() {
+  const t = today(), tk = key(t), st = S.settings, P = prof(), u = st.unit;
+  const firstLog = Object.keys(S.days).filter(k => logged(S.days[k])).sort()[0];
+  const sk = startKey() || firstLog || tk, s0 = parse(sk);
+  const dayN = Math.max(1, Math.round((t - s0) / 864e5) + 1);
+  $('#meDay').textContent = fmt(dayN);
+  $('#meSince').textContent = `since ${s0.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'})}`;
+  $('#meSub').textContent = startKey() ? 'Your journey so far' : firstLog ? 'Counting from your first logged day. Set a start date in Settings.' : 'Set a start date in Settings to begin';
+  // weights
+  const wk = Object.keys(S.days).filter(k => S.days[k].weight != null && k >= sk && k <= tk).sort();
+  const startW = P.startWeight || (wk.length ? S.days[wk[0]].weight : null), nowW = lastWeight('9999'), gw = st.goalWeight;
+  const U = v => v == null ? '--' : `${+toUnit(v).toFixed(1)} ${u}`;
+  let pct = null;
+  if (startW && nowW && gw && startW !== gw) pct = Math.max(0, Math.min(100, (startW - nowW) / (startW - gw) * 100));
+  $('#mePct').textContent = pct == null ? (gw ? 'log a weight' : 'set a goal weight') : Math.round(pct) + '%';
+  requestAnimationFrame(() => $('#meFill').style.width = (pct || 0) + '%');
+  $('#meStartW').textContent = 'Start ' + U(startW); $('#meNowW').textContent = 'Now ' + U(nowW); $('#meGoalW').textContent = 'Goal ' + U(gw);
+  // days since start
+  const days = []; for (let d = new Date(s0); d <= t; d = addDays(d, 1)) { const dd = S.days[key(d)]; days.push({d: new Date(d), dd, log: logged(dd)}) }
+  const L = days.filter(x => x.log), nets = L.map(x => net(x.dd));
+  const avg = nets.length ? nets.reduce((a,b) => a + b, 0) / nets.length : 0;
+  const onT = nets.filter(n => level(n) === 0).length, bal = nets.reduce((a,n) => a + (st.goal - n), 0), perU = u === 'lb' ? 3500 : 7700;
+  const burned = sum(days, x => x.dd ? sum(x.dd.exercise, e => e.cal) : 0);
+  let streak = 0, best = 0, run = 0; days.forEach(x => { run = x.log ? run + 1 : 0; best = Math.max(best, run) });
+  for (let d = logged(S.days[tk]) ? t : addDays(t, -1); logged(S.days[key(d)]); d = addDays(d, -1)) streak++;
+  const wch = startW && nowW ? toUnit(nowW) - toUnit(startW) : null;
+  $('#meKpis').innerHTML = [
+    [wch == null ? '--' : `${wch > 0 ? '+' : ''}${wch.toFixed(1)}<small> ${u}</small>`, 'Weight change', startW ? `from ${U(startW)}` : 'add a starting weight', wch == null ? '' : wch <= 0 ? 'good' : 'bad'],
+    [gw && nowW ? `${Math.abs(toUnit(nowW) - toUnit(gw)).toFixed(1)}<small> ${u}</small>` : '--', 'To goal', gw ? `goal ${U(gw)}` : 'set in Goals', ''],
+    [`${L.length}<small> / ${days.length}</small>`, 'Days logged', Math.round(L.length / days.length * 100) + '% consistency', ''],
+    [`${onT}<small> days</small>`, 'On target', L.length ? Math.round(onT / L.length * 100) + '% of logged days' : '', ''],
+    [`${fmt(avg)}<small> kcal</small>`, 'Daily average', 'net of exercise', ''],
+    [`${fmt(Math.abs(bal))}<small> kcal</small>`, bal >= 0 ? 'Total deficit' : 'Total surplus', `about ${(Math.abs(bal) / perU).toFixed(1)} ${u}`, bal >= 0 ? 'good' : 'bad'],
+    [`${fmt(burned)}<small> kcal</small>`, 'Burned exercising', `${sum(days, x => x.dd ? x.dd.exercise.length : 0)} workouts`, ''],
+    [`${streak}<small> days</small>`, 'Current streak', `best ${best} days`, '']
+  ].map(([v,l,d,c],i) => `<div class="kpi" style="animation:viewIn .5s var(--ease) ${i*40}ms both"><div class="lbl">${l}</div><div class="v num">${v}</div><div class="d ${c}">${d}</div></div>`).join('');
+  // body
+  const age = ageOf(P.dob), h = P.heightCm, bmi = h && nowW ? nowW / (h / 100) ** 2 : null;
+  const bmr = h && nowW && age && P.sex ? 10 * nowW + 6.25 * h - 5 * age + (P.sex === 'm' ? 5 : -161) : null;
+  const hTxt = h ? (u === 'lb' ? `${Math.floor(h / 2.54 / 12)} ft ${Math.round(h / 2.54 % 12)} in` : `${Math.round(h)} cm`) : '--';
+  const rows = [['Current weight', U(nowW)], ['Height', hTxt], ['Age', age != null ? String(age) : '--'], ['BMI', bmi ? `${bmi.toFixed(1)}` : '--', bmi ? 'healthy range 18.5 to 24.9' : ''], ['Resting burn', bmr ? `${fmt(bmr)} kcal / day` : '--', bmr ? 'calories your body uses at rest' : '']];
+  $('#meBody').innerHTML = rows.map(([l,v,n]) => `<div class="setrow"><div><div>${l}</div>${n ? `<div class="muted">${n}</div>` : ''}</div><b class="num" style="font-weight:600">${esc(v)}</b></div>`).join('') + (!h || !age || !P.sex ? `<p class="muted" style="margin:10px 0 0">Add your birthday, height and sex in <a href="#preferences" style="color:var(--acc)">Settings</a> to fill these in.</p>` : '');
+  // weight chart since start
+  const W = wk.map(k => ({d: parse(k), w: toUnit(S.days[k].weight)}));
+  jline.data = W; jline.range = [s0, t]; jline.draw();
+  $('#meWch').textContent = wch == null ? '' : `${wch > 0 ? '+' : ''}${wch.toFixed(1)} ${u}`;
+}
+function renderProfile() {
+  const P = prof(), imp = S.settings.unit === 'lb';
+  $$('[data-prof]').forEach(i => { const k = i.dataset.prof; i.value =
+    k === 'startWeight' ? (P.startWeight ? +toUnit(P.startWeight).toFixed(1) : '') :
+    k === 'heightCm' ? (P.heightCm ? +P.heightCm.toFixed(1) : '') :
+    k === 'ft' ? (P.heightCm ? Math.floor(P.heightCm / 2.54 / 12) : '') :
+    k === 'in' ? (P.heightCm ? Math.round(P.heightCm / 2.54 % 12) : '') : (P[k] || '') });
+  $$('#profSex button').forEach(b => b.classList.toggle('on', b.dataset.v === P.sex));
+  $('#phM').hidden = imp; $('#phI').hidden = !imp;
+  $$('.uLbl2').forEach(x => x.textContent = `(${S.settings.unit})`);
+}
+$$('[data-prof]').forEach(i => i.addEventListener('change', () => {
+  const P = S.settings.profile = {...prof()}, k = i.dataset.prof, v = i.value;
+  if (k === 'startWeight') P.startWeight = +v > 0 ? fromUnit(+v) : null;
+  else if (k === 'heightCm') P.heightCm = +v > 0 ? +v : null;
+  else if (k === 'ft' || k === 'in') { const ft = +$('[data-prof=ft]').value || 0, inch = +$('[data-prof=in]').value || 0; P.heightCm = ft || inch ? ft * 30.48 + inch * 2.54 : null }
+  else P[k] = v || '';
+  save(); toast('Saved');
+}));
+$('#profSex').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.profile = {...prof(), sex: b.dataset.v}; save(); renderProfile() };
 
 /* ================= CALENDAR ================= */
 let cmOff = 0;
@@ -1089,10 +1208,11 @@ function renderCal() {
   const cells = [];
   for (let i = 1; i <= m1.getDate(); i++) {
     const d = new Date(m0.getFullYear(), m0.getMonth(), i), k = key(d), dd = S.days[k], fut = d > t;
-    if (!fut) past++;
+    const pre = startKey() && k < startKey();
+    if (!fut && !pre) past++;
     let cls = 'cm-d', st = `animation-delay:${Math.min((lead + i) * 12, 420)}ms`, kc = '', tip = d.toDateString();
-    if (logged(dd)) { const n = net(dd), lv = level(n); counts[lv]++; logged0++; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = fmt(n); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
-    if (k === key(t)) cls += ' today'; if (fut) cls += ' fut';
+    if (logged(dd) && !pre) { const n = net(dd), lv = level(n); counts[lv]++; logged0++; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = fmt(n); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
+    if (k === key(t)) cls += ' today'; if (fut) cls += ' fut'; if (pre) cls += ' pre'; if (k === startKey()) cls += ' start';
     cells.push(`<button class="${cls}" style="${st}" data-k="${k}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span></button>`);
   }
   $('#cmGrid').innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="cm-h">${x}</div>`).join('') + '<div class="cm-d out"></div>'.repeat(lead) + cells.join('');
@@ -1285,6 +1405,10 @@ function renderGoals() {
   aim.innerHTML = steps.map(x => `<option value="${-x}">Lose ${x} ${st.unit} / week</option>`).join('') + '<option value="0">Maintain</option>' + steps.slice().reverse().map(x => `<option value="${x}">Gain ${x} ${st.unit} / week</option>`).join('');
   aim.value = prev;
   const lw = lastWeight('9999'); if (lw && !$('#cW').value) $('#cW').value = +toUnit(lw).toFixed(1);
+  const P = prof();
+  if (P.sex) $('#cSex').value = P.sex;
+  if (P.dob && !$('#cAge').value) $('#cAge').value = ageOf(P.dob);
+  if (P.heightCm) { if (!$('#cH').value) $('#cH').value = Math.round(P.heightCm); if (!$('#cFt').value) { $('#cFt').value = Math.floor(P.heightCm / 2.54 / 12); $('#cIn').value = Math.round(P.heightCm / 2.54 % 12) } }
 }
 $$('[data-set]').forEach(i => i.addEventListener('change', () => {
   const k = i.dataset.set, v = parseFloat(i.value);
@@ -1310,6 +1434,7 @@ function renderPrefs() {
   const st = S.settings;
   $$('#unitSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.unit));
   $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.theme));
+  renderProfile();
   const bd = st.bands || [100, 600, 1000];
   $$('[data-band]').forEach(i => i.value = bd[+i.dataset.band]);
   $('#bandTop').textContent = `more than +${fmt(bd[2])}`;
@@ -1412,7 +1537,7 @@ addEventListener('keydown', e => {
   if (k === 'a' || k === 'n') { e.preventDefault(); addFood() }
   else if (k === 'e') { e.preventDefault(); if (v !== 'diary') location.hash = 'diary'; setTimeout(() => exSheet({}), 0) }
   else if (k === 't') { cur = today(); if (v === 'diary') renderToday(); else location.hash = 'diary' }
-  else if (/^[1-7]$/.test(k)) location.hash = VIEWS[+k - 1];
+  else if (/^[1-8]$/.test(k)) location.hash = VIEWS[+k - 1];
   else if (k === 'arrowleft' || k === 'arrowright') {
     const d = k === 'arrowleft' ? -1 : 1;
     if (v === 'diary') shift(d);
