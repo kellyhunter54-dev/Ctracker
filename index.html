@@ -700,7 +700,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 /* ---------- state ---------- */
 const KEY = 'ctracker.v1';
 const MEALS = [['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner'],['snack','Snacks']];
-const DEF = {wv:2,settings:{goal:2000,protein:130,carbs:200,fat:65,waterGoal:1893,cup:237,cupKind:'glass',unit:'kg',theme:'system',goalWeight:null,bands:[100,600,1000],profile:{}},days:{},foods:[],recipes:[]};
+const DEF = {wv:2,exNet:1,settings:{goal:2000,protein:130,carbs:200,fat:65,waterGoal:1893,cup:237,cupKind:'glass',unit:'kg',theme:'system',goalWeight:null,bands:[100,600,1000],profile:{}},days:{},foods:[],recipes:[]};
 let S;
 const load = () => { try { S = JSON.parse(localStorage.getItem(KEY)) || null } catch(e) { S = null } S = S ? migrate(S) : structuredClone(DEF); S.settings = {...DEF.settings, ...S.settings}; S.days = S.days || {}; S.foods = S.foods || []; S.recipes = S.recipes || []; };
 // water used to be counted in 8 oz glasses; it is now stored in ml
@@ -971,16 +971,17 @@ const EX = [
   {k:'hike', n:'Hiking', met:[5, 6, 7.8]}, {k:'yoga', n:'Yoga', met:[2.5, 3, 4]}
 ];
 const LEVELS = ['Light', 'Moderate', 'Hard'];
-// Walking/running: ACSM metabolic equations (speed + incline). Other activities: MET values. kcal = VO2 (ml/kg/min) x kg / 1000 x 5
+// NET calories: only the extra burned on top of resting, because maintenance already includes resting burn.
+// Walking/running: ACSM metabolic equations without the 3.5 ml/kg/min resting part. Other activities: (MET - 1). kcal = VO2 (ml/kg/min) x kg / 1000 x 5
 const exKcal = (c, kg) => {
   const t = EX.find(x => x.k === c.type); if (!t || !(c.min > 0) || !(kg > 0)) return 0;
   if (t.speed) {
     if (!(c.kmh > 0)) return 0;
     const mpm = c.kmh * 1000 / 60, g = (c.incline || 0) / 100;
-    const vo2 = c.type === 'walk' ? 3.5 + .1 * mpm + 1.8 * mpm * g : 3.5 + .2 * mpm + .9 * mpm * g;
+    const vo2 = c.type === 'walk' ? .1 * mpm + 1.8 * mpm * g : .2 * mpm + .9 * mpm * g;
     return vo2 * kg / 1000 * 5 * c.min;
   }
-  return t.met[c.level ?? 1] * 3.5 * kg / 1000 * 5 * c.min;
+  return (t.met[c.level ?? 1] - 1) * 3.5 * kg / 1000 * 5 * c.min;
 };
 const spU = () => S.settings.unit === 'lb' ? 'mph' : 'km/h';
 const toSp = kmh => S.settings.unit === 'lb' ? kmh / 1.609344 : kmh;
@@ -1001,7 +1002,8 @@ function exSheet(en) {
       <div class="field" id="xLevelRow"><span>Intensity</span><div class="seg" id="xLevel">${LEVELS.map((l,i) => `<button type="button" data-l="${i}">${l}</button>`).join('')}</div></div>
       <div class="grid2"><label class="field"><span>Duration (min)</span><input class="inp num" id="xMin" type="number" inputmode="numeric" min="1" value="${c.min}"></label><label class="field"><span>Your weight (${S.settings.unit})</span><input class="inp num" id="xW" type="number" inputmode="decimal" step="0.1" min="0" value="${kg ? +toUnit(kg).toFixed(1) : ''}" placeholder="needed"></label></div>
       <label class="field"><span>Name (optional)</span><input class="inp" id="xLbl" value="${esc(customName)}" placeholder=""></label>
-      <div class="preview"><span>Estimated burn</span><b class="num" id="xEst">0 kcal</b></div>
+      <div class="preview"><span>Extra calories burned</span><b class="num" id="xEst">0 kcal</b></div>
+      <p class="muted" style="margin:-6px 2px 14px;font-size:12px">Only what this adds on top of your resting burn, which your daily goal already includes.</p>
     </div>
     <div id="xManual">
       <label class="field"><span>Activity</span><input class="inp" id="xName" value="${esc(en.calc ? '' : en.name || '')}" placeholder="e.g. Soccer"></label>
@@ -1049,6 +1051,15 @@ function exSheet(en) {
     prune(k); save(); closeSheet(); renderToday();
     toast('Exercise deleted', () => { ensureDay(k).exercise.splice(idx, 0, rm); save(); renderToday() });
   };
+}
+
+// Older versions stored gross exercise calories; recalculate calculator entries as net once.
+function netFix(D) {
+  if (!D || D.exNet) return;
+  const ks = Object.keys(D.days || {}).sort();
+  const wAt = k => { let w = null; for (const x of ks) { if (x > k) break; if (D.days[x].weight != null) w = D.days[x].weight } if (w == null) for (const x of ks) if (D.days[x].weight != null) { w = D.days[x].weight; break } return w };
+  ks.forEach(k => (D.days[k].exercise || []).forEach(e => { if (e.calc) { const kc = Math.round(exKcal(e.calc, wAt(k))); if (kc) e.cal = kc } }));
+  D.exNet = 1;
 }
 
 /* ================= STATS ================= */
@@ -1542,7 +1553,7 @@ $('#csvBtn').onclick = async () => {
   });
   toast(await saveFile(`ctracker-log-${key(today())}.csv`, rows.map(r => r.map(q).join(',')).join('\n'), 'text/csv') ? 'CSV saved' : 'Download blocked here');
 };
-const normalize = d => (migrate(d), {wv: 2,
+const normalize = d => (migrate(d), netFix(d), {wv: 2, exNet: 1,
   settings: {...DEF.settings, ...(d.settings || {})},
   days: Object.fromEntries(Object.entries(d.days || {}).map(([k,v]) => [k, {entries: v.entries || [], exercise: v.exercise || [], water: v.water || 0, weight: v.weight ?? null}])),
   foods: Array.isArray(d.foods) ? d.foods : [],
@@ -1621,6 +1632,7 @@ addEventListener('keydown', e => {
 });
 
 /* ---------- boot ---------- */
+if (!S.exNet) { netFix(S); save() }
 if (!location.hash) history.replaceState(null, '', '#diary');
 route();
 // refresh "today" when the date rolls over while the app stays open
