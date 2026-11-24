@@ -266,6 +266,16 @@ details.more[open] summary::before{content:"− "}
 .cm-pop li.no span:nth-child(2){color:var(--mute)}
 .cm-pop .pf{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
 
+/* add-food sources */
+.src-tabs{display:flex;gap:4px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+.src-tabs button{position:relative;padding:8px 10px 10px;font-size:14px;font-weight:500;color:var(--mute);transition:color .2s}
+.src-tabs button::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:var(--acc);transform:scaleX(0);transition:transform .25s var(--ease)}
+.src-tabs button.on{color:var(--ink)}
+.src-tabs button.on::after{transform:scaleX(1)}
+.src-tabs button:hover{color:var(--ink)}
+.pick{max-height:min(52vh,440px);overflow:auto;margin:0 -4px;padding:0 4px}
+.pick li .kc::after{content:" kcal";font-size:11px;color:var(--mute);font-weight:500}
+
 /* my stats */
 .me-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center}
 .me-day .big2{font-size:clamp(44px,10vw,64px);font-weight:600;line-height:1;color:var(--acc);margin:4px 0}
@@ -852,6 +862,11 @@ function foodSheet(en) {
   const per = k => en[k] != null && en[k] !== 0 ? +(en[k] / s).toFixed(1) : '';
   openSheet(`<h3>${editing ? 'Edit food' : 'Add food'}</h3>
   <div class="seg" id="fMeal" style="margin-bottom:14px">${MEALS.map(([m,l]) => `<button type="button" data-m="${m}" class="${m === en.meal ? 'on' : ''}">${l}</button>`).join('')}</div>
+  <div class="src-tabs" id="fSrc"><button type="button" data-s="enter" class="on">Enter</button><button type="button" data-s="foods">My foods</button><button type="button" data-s="recipes">Recipes</button><button type="button" data-s="recent">Recent</button></div>
+  <div id="fBrowse" hidden>
+    <div class="search" style="margin:0 0 10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="inp" id="fBQ" placeholder="Search" autocomplete="off"></div>
+    <ul class="items pick" id="fBList"></ul>
+  </div>
   <form id="fForm" autocomplete="off">
     <label class="field"><span>Food</span><input class="inp" id="fName" required value="${esc(en.name || '')}" placeholder="e.g. Greek yogurt" autofocus></label>
     <div class="sugg" id="fSugg"></div>
@@ -875,12 +890,37 @@ function foodSheet(en) {
     const list = suggestions($('#fName').value.trim());
     $('#fSugg').innerHTML = list.map((f,i) => `<button type="button" class="chip" data-i="${i}">${esc(f.name)}<small class="num">${fmt(f.cal)}</small></button>`).join('');
     $('#fSugg').style.display = list.length ? '' : 'none';
-    $('#fSugg').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; const f = list[b.dataset.i];
-      $('#fName').value = f.name; $('#fCal').value = +(+f.cal).toFixed(1);
-      $('#fP').value = f.p ? +(+f.p).toFixed(1) : ''; $('#fC').value = f.c ? +(+f.c).toFixed(1) : ''; $('#fF').value = f.f ? +(+f.f).toFixed(1) : '';
-      if (f.p || f.c || f.f) $('#sheet details').open = true; upd(); drawSugg(); };
+    $('#fSugg').onclick = e => { const b = e.target.closest('[data-i]'); if (!b) return; fill(list[b.dataset.i]); drawSugg() };
+  };
+  const fill = f => {
+    $('#fName').value = f.name; $('#fCal').value = +(+f.cal).toFixed(1);
+    $('#fP').value = f.p ? +(+f.p).toFixed(1) : ''; $('#fC').value = f.c ? +(+f.c).toFixed(1) : ''; $('#fF').value = f.f ? +(+f.f).toFixed(1) : '';
+    if (f.p || f.c || f.f) $('#sheet details').open = true; upd();
   };
   $('#fName').addEventListener('input', drawSugg); drawSugg();
+  // browse saved foods, recipes and recent entries
+  let src = 'enter', blist = [];
+  const sources = {
+    foods: () => S.foods.slice().sort((a,b) => (b.uses||0) - (a.uses||0) || a.name.localeCompare(b.name)).map(f => ({...f, sub: f.uses ? `logged ${f.uses}×` : ''})),
+    recipes: () => S.recipes.slice().sort((a,b) => (b.uses||0) - (a.uses||0) || a.name.localeCompare(b.name)).map(r => ({name: r.name, ...rTotals(r).per, sub: `recipe · ${(r.ingredients || []).length} ingredients`})),
+    recent: () => { const seen = new Set(), out = []; Object.keys(S.days).sort().reverse().forEach(k => S.days[k].entries.slice().reverse().forEach(e => { const n = e.name.toLowerCase(); if (seen.has(n) || out.length >= 60) return; seen.add(n); const sv = e.servings || 1; out.push({name: e.name, cal: e.cal / sv, p: (e.p||0) / sv, c: (e.c||0) / sv, f: (e.f||0) / sv, sub: parse(k).toLocaleDateString(undefined, {month:'short', day:'numeric'})}) })); return out }
+  };
+  const empties = {foods: 'No saved foods yet. Tick "Save to My foods" when adding, or add them on the Foods page.', recipes: 'No recipes yet. Create them on the Recipes page.', recent: 'Nothing logged yet.'};
+  const drawB = () => {
+    const q = $('#fBQ').value.trim().toLowerCase();
+    blist = sources[src]().filter(f => !q || f.name.toLowerCase().includes(q));
+    $('#fBList').innerHTML = blist.length ? blist.map((f,i) => `<li data-b="${i}" style="animation-delay:${Math.min(i*25,250)}ms"><div class="nm"><div>${esc(f.name)}</div><small class="num">${esc([f.p || f.c || f.f ? `P ${fmt(f.p)} · C ${fmt(f.c)} · F ${fmt(f.f)}` : '', f.sub].filter(Boolean).join(' · '))}</small></div><span class="kc">${fmt(f.cal)}</span></li>`).join('')
+      : `<li class="empty" style="cursor:default;background:none">${q ? 'No matches' : empties[src]}</li>`;
+  };
+  const setSrc = v => {
+    src = v; $$('#fSrc button').forEach(b => b.classList.toggle('on', b.dataset.s === v));
+    $('#fBrowse').hidden = v === 'enter'; $('#fForm').hidden = v !== 'enter';
+    if (v !== 'enter') { $('#fBQ').value = ''; drawB(); if (matchMedia('(pointer:fine)').matches) $('#fBQ').focus() }
+  };
+  $('#fSrc').onclick = e => { const b = e.target.closest('[data-s]'); if (b) setSrc(b.dataset.s) };
+  $('#fBQ').addEventListener('input', drawB);
+  $('#fBList').onclick = e => { const li = e.target.closest('[data-b]'); if (!li) return; fill(blist[+li.dataset.b]); $('#fSrv').value = 1; upd(); setSrc('enter'); drawSugg(); const sv = $('#fSrv'); if (matchMedia('(pointer:fine)').matches) { sv.focus(); sv.select() } };
+  if (editing) $('#fSrc').hidden = true;
   $('#fForm').onsubmit = e => {
     e.preventDefault();
     const srv = parseFloat($('#fSrv').value) || 1, g = id => (parseFloat($(id).value) || 0) * srv;
