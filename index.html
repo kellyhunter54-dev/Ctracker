@@ -96,6 +96,13 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .bar{height:6px;border-radius:99px;background:var(--card2);overflow:hidden}
 .bar i{display:block;height:100%;width:0;border-radius:99px;transition:width 1s var(--ease)}
 
+/* exercise reward */
+.earned{display:block;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);animation:earnIn .55s var(--spring) both}
+.earned b{display:block;font:600 22px/1 "Inter Tight",sans-serif;font-variant-numeric:tabular-nums}
+.earned span{display:block;font-size:12px;font-weight:500;margin-top:3px}
+.earned small{display:block;font-size:11.5px;margin-top:2px;opacity:.85}
+@keyframes earnIn{from{opacity:0;transform:translateY(6px) scale(.96)}}
+
 /* meals */
 .meal-head{display:flex;align-items:center;gap:8px}
 .meal-head .add{margin-left:8px}
@@ -466,6 +473,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
           <div class="stat"><i class="dot" style="background:var(--faint)"></i><div><b id="sGoal">0</b><span>Goal</span></div></div>
           <div class="stat"><i class="dot" style="background:var(--acc)"></i><div><b id="sFood">0</b><span>Eaten</span></div></div>
           <div class="stat"><i class="dot" style="background:var(--good)"></i><div><b id="sEx">0</b><span>Burned</span></div></div>
+          <div class="earned" id="earned" hidden><b class="num" id="allowed">0</b><span>allowed today</span><small id="earnedSub"></small></div>
         </div>
       </div>
       <div class="macros" id="macros"></div>
@@ -817,6 +825,9 @@ function renderToday() {
   tween($('#remain'), Math.abs(rem));
   $('#remainCap').textContent = over ? 'kcal over' : 'kcal left';
   tween($('#sGoal'), st.goal); tween($('#sFood'), food); tween($('#sEx'), ex);
+  const eb = $('#earned');
+  if (ex > 0) { if (eb.hidden) { $('#allowed')._v = st.goal; eb.hidden = false; eb.style.animation = 'none'; eb.offsetWidth; eb.style.animation = '' } tween($('#allowed'), st.goal + ex); $('#earnedSub').textContent = `+${fmt(ex)} from exercise` }
+  else eb.hidden = true;
 
   const mac = [['Protein','p',st.protein,'--pro'],['Carbs','c',st.carbs,'--carb'],['Fat','f',st.fat,'--fat']];
   $('#macros').innerHTML = mac.map(([l,f,g,c]) => { const v = sum(d.entries, e => e[f]); return `<div class="mac"><div class="top2"><span>${l}</span><span><b class="num">${fmt(v)}</b> / ${fmt(g)}g</span></div><div class="bar"><i style="background:var(${c})" data-w="${Math.min(100, g ? v / g * 100 : 0)}"></i></div></div>` }).join('');
