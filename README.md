@@ -8,11 +8,14 @@ A personal calorie tracker. Plain HTML, CSS and JavaScript in a single `index.ht
 - **Quick logging**: suggestions from your saved foods and recent entries, servings multiplier, optional macros, "Save to My foods", edit or delete any entry with undo.
 - **Progress**: Week, Month, 3 Months and Year views with averages, days within goal, total deficit/surplus (and the weight it roughly equals), logging consistency, streak, a calories chart with goal line, a month calendar you can tap into, and a weight trend chart with your goal weight.
 - **My foods**: a library of saved items for one-tap logging.
-- **Goals**: calorie, macro and water targets, goal weight, a Mifflin-St Jeor goal calculator, kg/lb, light/dark/auto theme, export/import backup, demo data, erase.
+- **Recipes**: save dishes you make with their ingredients (amount, calories, macros), servings and notes. Calories per serving are worked out for you, and you can log a serving (or 1.5, etc.) in one tap. Recipes also show up as suggestions when adding food.
+- **Goals**: calorie, macro and water targets, goal weight, and a Mifflin-St Jeor goal calculator.
+- **Settings**: Metric or Imperial units, light/dark/auto theme, backup export (download or copy), import (file or paste, merge or replace), CSV export of the whole log, demo data, erase.
+- **Desktop layout** (1000px and wider): sidebar, multi-column pages, centered dialogs and keyboard shortcuts (A add food, E add exercise, arrows change day, T today, 1-6 switch page).
 
 ## Data
 
-Everything lives in the browser's `localStorage` under the key `ctracker.v1`, on the device you use. Use **Goals > Export backup** to save a JSON file, and **Import backup** to restore it on another device or browser.
+Everything lives in the browser's `localStorage` under the key `ctracker.v1`, on the device you use. To move it to another device: **Settings > Download backup** (or **Copy backup**), then on the other device **Settings > Import file** (or **Paste backup**) and choose Merge or Replace.
 
 ## Run it
 
