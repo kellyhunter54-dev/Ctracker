@@ -2,7 +2,7 @@
   "name": "Ctracker",
   "short_name": "Ctracker",
   "description": "Personal calorie tracker",
-  "start_url": "./index.html#today",
+  "start_url": "./index.html#diary",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0c0c0e",

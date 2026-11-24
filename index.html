@@ -126,14 +126,15 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .fab{position:fixed;right:max(20px,calc(50% - 260px));bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;width:58px;height:58px;border-radius:20px;background:var(--acc);color:#fff;display:grid;place-items:center;box-shadow:0 10px 28px color-mix(in srgb,var(--acc) 45%,transparent);transition:transform .25s var(--spring)}
 .fab:hover{transform:translateY(-2px) scale(1.04)}.fab:active{transform:scale(.92)}
 .fab svg{width:26px;height:26px}
-body:not([data-view=today]) .fab{transform:scale(0);pointer-events:none}
+body:not([data-view=diary]) .fab{transform:scale(0);pointer-events:none}
 
 /* tabs */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-.tabs nav{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.tabs nav{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
 .tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 9px;font-size:11px;font-weight:500;color:var(--faint);text-decoration:none;transition:color .2s}
 .tabs a svg{width:22px;height:22px;transition:transform .3s var(--spring)}
 .tabs a.on{color:var(--ink)}
+.tabs a.desk-only{display:none}
 .tabs a.on svg{transform:translateY(-2px);color:var(--acc)}
 
 /* forms */
@@ -225,6 +226,31 @@ details.more[open] summary::before{content:"− "}
 .muted{color:var(--mute);font-size:13px}
 .foot{text-align:center;color:var(--faint);font-size:12px;margin:22px 0}
 
+/* calendar */
+:root{--lv0:light-dark(#1f9d63,#3ccf8e);--lv1:light-dark(#d9a400,#f5c542);--lv2:light-dark(#ec7a1c,#ff9a3d);--lv3:light-dark(#d92d3a,#ff5a63)}
+#v-calendar .top h1{flex:1}
+.cm-card{padding:14px}
+.cm-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cm-h{font-size:11px;color:var(--faint);text-align:center;padding:2px 0 6px}
+.cm-d{position:relative;aspect-ratio:1;border-radius:12px;background:var(--card2);display:flex;flex-direction:column;justify-content:space-between;padding:7px 8px;text-align:left;color:var(--mute);transition:transform .25s var(--spring),box-shadow .2s;animation:cmIn .45s var(--ease) both}
+@keyframes cmIn{from{opacity:0;transform:scale(.9)}}
+.cm-d:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.cm-d .n{font:600 13px/1 "Inter Tight",sans-serif}
+.cm-d .k{font:500 11px/1 "Inter Tight",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;opacity:.9}
+.cm-d .dot{position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%}
+.cm-d.lv{color:var(--c);background:color-mix(in srgb,var(--c) 15%,var(--card))}
+.cm-d.lv .dot{background:var(--c)}
+.cm-d.today{box-shadow:inset 0 0 0 2px var(--ink)}
+.cm-d.fut{opacity:.35;pointer-events:none}
+.cm-d.out{visibility:hidden}
+.cm-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:4px 2px 18px;font-size:13px;color:var(--mute)}
+.cm-legend span{display:inline-flex;align-items:center;gap:7px}
+.cm-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cm-legend b{color:var(--ink);font-family:"Inter Tight",sans-serif}
+.bandlbl{display:inline-flex;align-items:center;gap:8px}
+.bandlbl i{width:10px;height:10px;border-radius:3px;display:inline-block}
+@media (max-width:420px){.cm-d .k{display:none}.cm-d{padding:6px}.cm-d .dot{width:6px;height:6px;right:auto;left:6px;top:auto;bottom:6px}}
+
 /* recipes */
 [hidden]{display:none!important}
 .rgrid{display:grid;gap:14px}
@@ -302,6 +328,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
   .tabs nav{display:flex;flex-direction:column;gap:4px;height:100%;max-width:none}
   .tabs a{flex-direction:row;gap:12px;padding:11px 14px;font-size:14px;border-radius:12px;color:var(--mute);transition:background .2s,color .2s}
   .tabs a:hover{background:var(--card2);color:var(--ink)}
+  .tabs a.desk-only{display:flex}
   .tabs a.on{background:var(--acc2);color:var(--ink)}
   .tabs a svg{width:20px;height:20px}
   .tabs a.on svg{transform:none}
@@ -341,6 +368,13 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 
   /* goals */
   .goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  #v-calendar{max-width:980px}
+  .cm-card{padding:22px}
+  .cm-grid{gap:10px}
+  .cm-d{aspect-ratio:auto;min-height:96px;padding:12px 12px 10px;border-radius:14px}
+  .cm-d .n{font-size:15px}
+  .cm-d .k{font-size:13px}
+  .cm-h{font-size:12px}
   .gcol>.card:last-child{margin-bottom:0}
   .rgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
   #v-recipes .search{max-width:480px}
@@ -365,11 +399,11 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 }
 </style>
 </head>
-<body data-view="today">
+<body data-view="diary">
 <div class="app">
 
   <!-- TODAY -->
-  <section class="view" id="v-today">
+  <section class="view" id="v-diary">
     <header class="top">
       <button class="ibtn" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
       <h1 id="dayTitle">Today<span class="sub" id="daySub"></span></h1>
@@ -444,6 +478,19 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     </div>
   </section>
 
+  <!-- CALENDAR -->
+  <section class="view" id="v-calendar">
+    <header class="top"><h1 id="cmTitle">Calendar<span class="sub" id="cmSub"></span></h1>
+      <button class="pill" id="cmToday">This month</button>
+      <button class="ibtn" id="cmPrev" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="ibtn" id="cmNext" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></button>
+    </header>
+    <div class="card cm-card">
+      <div class="cm-grid" id="cmGrid"></div>
+    </div>
+    <div class="cm-legend" id="cmLegend"></div>
+  </section>
+
   <!-- FOODS -->
   <section class="view" id="v-foods">
     <header class="top"><h1>My foods<span class="sub">Saved items for one-tap logging</span></h1><button class="pill" id="newFood">+ New</button></header>
@@ -503,6 +550,16 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
       </div>
     </div>
     <div class="card">
+      <h2>Calendar colours</h2>
+      <p class="muted" style="margin:6px 0 4px">How far over your calorie goal each colour allows, in kcal.</p>
+      <div style="margin-top:4px">
+        <div class="setrow"><span class="bandlbl"><i style="background:var(--lv0)"></i>On target, up to +</span><input class="inp num" type="number" inputmode="numeric" min="0" data-band="0"></div>
+        <div class="setrow"><span class="bandlbl"><i style="background:var(--lv1)"></i>A bit over, up to +</span><input class="inp num" type="number" inputmode="numeric" min="0" data-band="1"></div>
+        <div class="setrow"><span class="bandlbl"><i style="background:var(--lv2)"></i>Over, up to +</span><input class="inp num" type="number" inputmode="numeric" min="0" data-band="2"></div>
+        <div class="setrow"><span class="bandlbl"><i style="background:var(--lv3)"></i>Way over</span><span class="muted" id="bandTop"></span></div>
+      </div>
+    </div>
+    <div class="card">
       <h2>Appearance</h2>
       <div style="margin-top:8px">
         <div class="setrow"><span>Theme</span><div class="seg" id="themeSeg"><button data-v="system">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
@@ -539,13 +596,14 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 <div class="tabs"><nav>
   <div class="brand desk-only"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="256" r="150" fill="none" stroke="var(--card2)" stroke-width="56"/><circle cx="256" cy="256" r="150" fill="none" stroke="var(--acc)" stroke-width="56" stroke-linecap="round" stroke-dasharray="660 943" transform="rotate(-90 256 256)"/></svg>Ctracker</div>
   <button class="btn add-btn desk-only" id="addSide">+ Add food</button>
-  <a href="#today" data-v="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</a>
+  <a href="#diary" data-v="diary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Diary</a>
   <a href="#stats" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Progress</a>
+  <a href="#calendar" data-v="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Calendar</a>
   <a href="#foods" data-v="foods"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Foods</a>
   <a href="#recipes" data-v="recipes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M4 19a2 2 0 0 1 2-2h13M9 8h6M9 11h4"/></svg>Recipes</a>
   <a href="#goals" data-v="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Goals</a>
   <a href="#preferences" data-v="preferences" class="desk-only nav-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</a>
-  <div class="keys desk-only"><div><kbd>A</kbd> Add food</div><div><kbd>E</kbd> Add exercise</div><div><kbd>←</kbd><kbd>→</kbd> Change day</div><div><kbd>T</kbd> Today</div><div><kbd>1</kbd>-<kbd>6</kbd> Switch page</div></div>
+  <div class="keys desk-only"><div><kbd>A</kbd> Add food</div><div><kbd>E</kbd> Add exercise</div><div><kbd>←</kbd><kbd>→</kbd> Change day</div><div><kbd>T</kbd> Today</div><div><kbd>1</kbd>-<kbd>7</kbd> Switch page</div></div>
 </nav></div>
 
 <div class="scrim" id="scrim"></div>
@@ -557,7 +615,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 /* ---------- state ---------- */
 const KEY = 'ctracker.v1';
 const MEALS = [['breakfast','Breakfast'],['lunch','Lunch'],['dinner','Dinner'],['snack','Snacks']];
-const DEF = {settings:{goal:2000,protein:130,carbs:200,fat:65,water:8,unit:'kg',theme:'system',goalWeight:null},days:{},foods:[],recipes:[]};
+const DEF = {settings:{goal:2000,protein:130,carbs:200,fat:65,water:8,unit:'kg',theme:'system',goalWeight:null,bands:[100,600,1000]},days:{},foods:[],recipes:[]};
 let S;
 const load = () => { try { S = JSON.parse(localStorage.getItem(KEY)) || null } catch(e) { S = null } S = S || structuredClone(DEF); S.settings = {...DEF.settings, ...S.settings}; S.days = S.days || {}; S.foods = S.foods || []; S.recipes = S.recipes || []; };
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch(e) {} };
@@ -584,6 +642,8 @@ const toUnit = kg => S.settings.unit === 'lb' ? kg * LB : kg;
 const fromUnit = v => S.settings.unit === 'lb' ? v / LB : v;
 const net = d => sum(d.entries, e => e.cal) - sum(d.exercise, e => e.cal);
 const logged = d => d && d.entries && d.entries.length > 0;
+const LV = ['On target', 'A bit over', 'Over', 'Way over'];
+const level = n => { const o = n - S.settings.goal, b = S.settings.bands || [100, 600, 1000]; return o <= b[0] ? 0 : o <= b[1] ? 1 : o <= b[2] ? 2 : 3 };
 // entries linked to a saved food / recipe: by id, or (older entries) by the same name
 const linkedEntries = (kind, obj) => { const out = [], nm = (obj.name || '').toLowerCase(); Object.values(S.days).forEach(d => d.entries.forEach(e => { if (e[kind] === obj.id || (!e.food && !e.recipe && e.name.toLowerCase() === nm)) out.push(e) })); return out };
 const applyPer = (list, kind, id, name, per) => list.forEach(e => { const s = e.servings || 1; Object.assign(e, {name, cal: Math.round(per.cal * s), p: +((per.p || 0) * s).toFixed(1), c: +((per.c || 0) * s).toFixed(1), f: +((per.f || 0) * s).toFixed(1), [kind]: id}) });
@@ -628,13 +688,13 @@ const confirmSheet = (title, msg, okLabel, fn) => {
 
 /* ---------- routing ---------- */
 let cur = today();
-const VIEWS = ['today','stats','foods','recipes','goals','preferences'];
+const VIEWS = ['diary','stats','calendar','foods','recipes','goals','preferences'];
 const route = () => {
-  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'today';
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'diary';
   document.body.dataset.view = v;
   $$('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
   $$('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.v === v || (v === 'preferences' && a.dataset.v === 'goals' && innerWidth < 1000)));
-  if (v === 'today') renderToday(); if (v === 'stats') renderStats(); if (v === 'foods') renderFoods(); if (v === 'goals') renderGoals(); if (v === 'recipes') renderRecipes(); if (v === 'preferences') renderPrefs();
+  if (v === 'diary') renderToday(); if (v === 'stats') renderStats(); if (v === 'foods') renderFoods(); if (v === 'goals') renderGoals(); if (v === 'recipes') renderRecipes(); if (v === 'preferences') renderPrefs(); if (v === 'calendar') renderCal();
   scrollTo({top:0});
 };
 addEventListener('hashchange', route);
@@ -710,8 +770,8 @@ $('#prevDay').onclick = () => shift(-1);
 $('#nextDay').onclick = () => shift(1);
 $('#dayTitle').onclick = () => { cur = today(); renderToday() };
 let tx = null;
-$('#v-today').addEventListener('touchstart', e => { tx = [e.touches[0].clientX, e.touches[0].clientY] }, {passive:true});
-$('#v-today').addEventListener('touchend', e => { if (!tx) return; const dx = e.changedTouches[0].clientX - tx[0], dy = e.changedTouches[0].clientY - tx[1]; if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) shift(dx < 0 ? 1 : -1); tx = null });
+$('#v-diary').addEventListener('touchstart', e => { tx = [e.touches[0].clientX, e.touches[0].clientY] }, {passive:true});
+$('#v-diary').addEventListener('touchend', e => { if (!tx) return; const dx = e.changedTouches[0].clientX - tx[0], dy = e.changedTouches[0].clientY - tx[1]; if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) shift(dx < 0 ? 1 : -1); tx = null });
 
 /* ---------- food sheet ---------- */
 function suggestions(q) {
@@ -913,7 +973,7 @@ function renderStats() {
   if (rMode === 'month') {
     const lead = (R.s.getDay() + 6) % 7;
     $('#cal').innerHTML = ['M','T','W','T','F','S','S'].map(x => `<div class="h">${x}</div>`).join('') + '<div></div>'.repeat(lead) +
-      days.map(x => `<button data-k="${x.k}" class="${x.log ? (x.net <= goal ? 'ok' : 'ov') : ''}${x.k === key(t) ? ' today' : ''}${x.fut ? ' fut' : ''}" aria-label="${x.d.toDateString()}${x.log ? ', ' + fmt(x.net) + ' kcal' : ''}">${x.d.getDate()}</button>`).join('');
+      days.map(x => `<button data-k="${x.k}" style="${x.log ? `--c:var(--lv${level(x.net)});background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)` : ''}" class="${''}${x.k === key(t) ? ' today' : ''}${x.fut ? ' fut' : ''}" aria-label="${x.d.toDateString()}${x.log ? ', ' + fmt(x.net) + ' kcal' : ''}">${x.d.getDate()}</button>`).join('');
   }
   // weight
   const W = days.filter(x => S.days[x.k] && S.days[x.k].weight != null).map(x => ({d: x.d, w: toUnit(S.days[x.k].weight)}));
@@ -928,7 +988,7 @@ function renderStats() {
 $('#rangeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; rMode = b.dataset.r; rOff = 0; renderStats() };
 $('#rPrev').onclick = () => { rOff--; renderStats() };
 $('#rNext').onclick = () => { if (rOff < 0) { rOff++; renderStats() } };
-$('#cal').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; cur = parse(b.dataset.k); location.hash = 'today' };
+$('#cal').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; cur = parse(b.dataset.k); location.hash = 'diary' };
 
 /* ---------- charts ---------- */
 const NS = 'http://www.w3.org/2000/svg';
@@ -963,7 +1023,7 @@ const bars = {data: [], goal: 2000, draw() {
     tip.style.left = px + 'px'; tip.style.top = (x.v == null ? t + ih : y(Math.max(x.v, 0))) - 6 + 'px'; tip.style.opacity = 1;
   };
   svg.onpointerleave = () => { tip.style.opacity = 0; hov.setAttribute('opacity', 0) };
-  svg.onclick = e => { const rc = e.target.closest('[data-i]'); if (rc && D[+rc.dataset.i].k) { cur = parse(D[+rc.dataset.i].k); location.hash = 'today' } };
+  svg.onclick = e => { const rc = e.target.closest('[data-i]'); if (rc && D[+rc.dataset.i].k) { cur = parse(D[+rc.dataset.i].k); location.hash = 'diary' } };
 }};
 const wline = {data: [], range: [new Date(), new Date()], draw() {
   const svg = $('#wSvg'), fig = $('#wFig'), tip = fig.querySelector('.tip'), W = svg.clientWidth, H = svg.clientHeight;
@@ -1001,6 +1061,34 @@ const wline = {data: [], range: [new Date(), new Date()], draw() {
 }};
 const ro = new ResizeObserver(() => { if (document.body.dataset.view === 'stats') { bars.draw(); wline.draw() } });
 ro.observe($('#calFig')); ro.observe($('#wFig'));
+
+/* ================= CALENDAR ================= */
+let cmOff = 0;
+function renderCal() {
+  const t = today(), m0 = new Date(t.getFullYear(), t.getMonth() + cmOff, 1), m1 = new Date(m0.getFullYear(), m0.getMonth() + 1, 0);
+  $('#cmTitle').firstChild.textContent = m0.toLocaleDateString(undefined, {month:'long', year:'numeric'});
+  $('#cmToday').hidden = !cmOff;
+  $('#cmNext').style.visibility = cmOff < 0 ? 'visible' : 'hidden';
+  const lead = (m0.getDay() + 6) % 7, counts = [0,0,0,0]; let logged0 = 0, past = 0;
+  const cells = [];
+  for (let i = 1; i <= m1.getDate(); i++) {
+    const d = new Date(m0.getFullYear(), m0.getMonth(), i), k = key(d), dd = S.days[k], fut = d > t;
+    if (!fut) past++;
+    let cls = 'cm-d', st = `animation-delay:${Math.min((lead + i) * 12, 420)}ms`, kc = '', tip = d.toDateString();
+    if (logged(dd)) { const n = net(dd), lv = level(n); counts[lv]++; logged0++; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = fmt(n); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
+    if (k === key(t)) cls += ' today'; if (fut) cls += ' fut';
+    cells.push(`<button class="${cls}" style="${st}" data-k="${k}" title="${esc(tip)}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span></button>`);
+  }
+  $('#cmGrid').innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="cm-h">${x}</div>`).join('') + '<div class="cm-d out"></div>'.repeat(lead) + cells.join('');
+  $('#cmSub').textContent = past ? `${logged0} of ${past} days logged · ${counts[0]} on target` : 'Nothing to show yet';
+  const b = S.settings.bands, g = S.settings.goal;
+  const rng = [`up to ${fmt(g + b[0])}`, `${fmt(g + b[0] + 1)} to ${fmt(g + b[1])}`, `${fmt(g + b[1] + 1)} to ${fmt(g + b[2])}`, `over ${fmt(g + b[2])}`];
+  $('#cmLegend').innerHTML = LV.map((l,i) => `<span><i style="background:var(--lv${i})"></i>${l} <b>${counts[i]}</b><span class="muted" style="font-size:12px">${rng[i]} kcal</span></span>`).join('');
+}
+$('#cmGrid').onclick = e => { const b = e.target.closest('[data-k]'); if (b) { cur = parse(b.dataset.k); location.hash = 'diary' } };
+$('#cmPrev').onclick = () => { cmOff--; renderCal() };
+$('#cmNext').onclick = () => { if (cmOff < 0) { cmOff++; renderCal() } };
+$('#cmToday').onclick = () => { cmOff = 0; renderCal() };
 
 /* ================= FOODS ================= */
 function renderFoods() {
@@ -1174,11 +1262,19 @@ function renderPrefs() {
   const st = S.settings;
   $$('#unitSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.unit));
   $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.theme));
+  const bd = st.bands || [100, 600, 1000];
+  $$('[data-band]').forEach(i => i.value = bd[+i.dataset.band]);
+  $('#bandTop').textContent = `more than +${fmt(bd[2])}`;
   $('#unitHint').textContent = st.unit === 'lb' ? 'Weight in pounds, height in feet and inches' : 'Weight in kilograms, height in centimetres';
   const nd = Object.keys(S.days).length, ne = sum(Object.values(S.days), d => d.entries.length);
   $('#dataSum').innerHTML = [[nd, 'days logged'], [ne, 'food entries'], [S.foods.length, 'saved foods'], [S.recipes.length, 'recipes']].map(([v,l]) => `<div><b class="num">${fmt(v)}</b><span>${l}</span></div>`).join('');
 }
 $('#unitSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.unit = b.dataset.v; save(); $('#cW').value = ''; renderPrefs(); toast(b.dataset.v === 'lb' ? 'Switched to imperial' : 'Switched to metric') };
+$$('[data-band]').forEach(i => i.addEventListener('change', () => {
+  const b = [...(S.settings.bands || [100, 600, 1000])], n = +i.dataset.band, v = Math.max(0, Math.round(+i.value || 0));
+  b[n] = v; for (let j = n + 1; j < 3; j++) if (b[j] < b[j-1]) b[j] = b[j-1]; for (let j = n - 1; j >= 0; j--) if (b[j] > b[j+1]) b[j] = b[j+1];
+  S.settings.bands = b; save(); renderPrefs(); toast('Saved');
+}));
 $('#themeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.theme = b.dataset.v; save(); applyTheme(); renderPrefs() };
 
 let dlApi = null;
@@ -1243,6 +1339,7 @@ $('#demoBtn').onclick = () => confirmSheet('Load demo data?', 'Fills the last 90
     const k = key(addDays(today(), -i)); if (i > 0 && Math.random() < .08) continue;
     const d = ensureDay(k), pick = a => a[Math.floor(Math.random() * a.length)];
     MEALS.forEach(([m]) => { if (m === 'snack' && Math.random() < .4) return; const [n,c,p,cb,f] = pick(menu[m]); d.entries.push({id: uid(), name: n, cal: c, p, c: cb, f, servings: 1, meal: m, t: 0}) });
+    if (Math.random() < .35) { const [n,c] = pick([['Pizza night',900],['Dessert',450],['Takeout',1300],['Drinks with friends',700],['Birthday cake',600]]); d.entries.push({id: uid(), name: n, cal: c, p: 10, c: 60, f: 25, servings: 1, meal: 'snack', t: 0}) }
     if (Math.random() < .4) d.exercise.push({id: uid(), name: pick(['Run 30 min','Walk 45 min','Weights 45 min']), cal: pick([180,250,300])});
     d.water = 4 + Math.floor(Math.random() * 5);
     w += (Math.random() - .62) * .25; if (i % 2 === 0) d.weight = +w.toFixed(1);
@@ -1254,7 +1351,7 @@ $('#demoBtn').onclick = () => confirmSheet('Load demo data?', 'Fills the last 90
 });
 
 /* ---------- desktop controls ---------- */
-const addFood = () => { if (document.body.dataset.view !== 'today') location.hash = 'today'; setTimeout(() => foodSheet({meal: mealFor()}), 0) };
+const addFood = () => { if (document.body.dataset.view !== 'diary') location.hash = 'diary'; setTimeout(() => foodSheet({meal: mealFor()}), 0) };
 $('#addSide').onclick = addFood;
 $('#addTop').onclick = addFood;
 $('#goToday').onclick = () => { cur = today(); renderToday() };
@@ -1265,18 +1362,19 @@ addEventListener('keydown', e => {
   if (tag === 'input' || tag === 'select' || tag === 'textarea' || $('#sheet').classList.contains('on')) return;
   const v = document.body.dataset.view, k = e.key.toLowerCase();
   if (k === 'a' || k === 'n') { e.preventDefault(); addFood() }
-  else if (k === 'e') { e.preventDefault(); if (v !== 'today') location.hash = 'today'; setTimeout(() => exSheet({}), 0) }
-  else if (k === 't') { cur = today(); if (v === 'today') renderToday(); else location.hash = 'today' }
-  else if (['1','2','3','4','5','6'].includes(k)) location.hash = VIEWS[+k - 1];
+  else if (k === 'e') { e.preventDefault(); if (v !== 'diary') location.hash = 'diary'; setTimeout(() => exSheet({}), 0) }
+  else if (k === 't') { cur = today(); if (v === 'diary') renderToday(); else location.hash = 'diary' }
+  else if (/^[1-7]$/.test(k)) location.hash = VIEWS[+k - 1];
   else if (k === 'arrowleft' || k === 'arrowright') {
     const d = k === 'arrowleft' ? -1 : 1;
-    if (v === 'today') shift(d);
+    if (v === 'diary') shift(d);
     else if (v === 'stats') { if (d < 0) rOff--; else if (rOff < 0) rOff++; renderStats() }
+    else if (v === 'calendar') { cmOff += d; renderCal() }
   }
 });
 
 /* ---------- boot ---------- */
-if (!location.hash) history.replaceState(null, '', '#today');
+if (!location.hash) history.replaceState(null, '', '#diary');
 route();
 // refresh "today" when the date rolls over while the app stays open
 let lastDay = key(today());
