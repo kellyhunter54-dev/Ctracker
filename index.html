@@ -223,9 +223,85 @@ details.more[open] summary::before{content:"− "}
 .muted{color:var(--mute);font-size:13px}
 .foot{text-align:center;color:var(--faint);font-size:12px;margin:22px 0}
 
-@media (min-width:700px){
+/* layout helpers (phone order) */
+.desk-only{display:none}
+#dayTitle{text-align:center;cursor:pointer}
+.cols{display:flex;flex-direction:column}
+.col-a,.col-b{display:contents}
+.hero-card{order:1}#meals{order:2}.ex-card{order:3}.mini{order:4;margin-bottom:14px}
+kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:6px;background:var(--card2);border:1px solid var(--line);font:600 11px Inter,sans-serif;color:var(--mute);margin-right:2px}
+
+@media (min-width:700px) and (max-width:999px){
   .app{padding-top:12px}
   .ring{width:210px}
+  .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+/* ---------- desktop ---------- */
+@media (min-width:1000px){
+  .desk-only{display:revert}
+  body{--side:236px}
+  .app{max-width:none;margin:0 0 0 var(--side);padding:8px clamp(24px,3.5vw,56px) 56px;min-height:100vh}
+  .app>.view{max-width:1240px;margin:0 auto}
+  .fab{display:none}
+  .top{padding:22px 0 18px;gap:6px}
+  .top h1{font-size:30px}
+  .top .sub{font-size:14px;margin-top:4px}
+  #prevDay{order:0}#nextDay{order:1}#dayTitle{order:2;text-align:left;margin-left:10px}
+  .head-acts{display:flex;order:3;gap:10px;align-items:center}
+  .date-pick{height:40px;width:170px;font-size:14px;padding:0 12px}
+  .head-acts .add-btn{height:40px;width:auto;padding:0 18px;font-size:14px;border-radius:12px}
+
+  /* sidebar */
+  .tabs{left:0;right:auto;top:0;bottom:0;width:var(--side);border-top:0;border-right:1px solid var(--line);padding:22px 14px;background:var(--card)}
+  .tabs nav{display:flex;flex-direction:column;gap:4px;height:100%;max-width:none}
+  .tabs a{flex-direction:row;gap:12px;padding:11px 14px;font-size:14px;border-radius:12px;color:var(--mute);transition:background .2s,color .2s}
+  .tabs a:hover{background:var(--card2);color:var(--ink)}
+  .tabs a.on{background:var(--acc2);color:var(--ink)}
+  .tabs a svg{width:20px;height:20px}
+  .tabs a.on svg{transform:none}
+  .brand{display:flex;align-items:center;gap:10px;font:600 21px/1 "Inter Tight",sans-serif;letter-spacing:-.02em;padding:6px 10px 22px}
+  .brand svg{width:28px;height:28px}
+  .tabs .add-btn{display:block;height:44px;border-radius:12px;font-size:14px;margin-bottom:16px}
+  .keys{display:grid;gap:8px;margin-top:auto;padding:14px 10px 4px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+
+  /* today: two columns */
+  .cols{display:grid;grid-template-columns:minmax(340px,400px) minmax(0,1fr);gap:20px;align-items:start}
+  .col-a,.col-b{display:block}
+  .col-a{position:sticky;top:96px}
+  .ring{width:220px}
+  #meals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
+  #meals .card{margin:0;min-height:150px}
+  .card{padding:22px}
+  .mini{margin-bottom:0}
+
+  /* stats */
+  #v-stats .seg{max-width:480px}
+  .range{max-width:480px}
+  .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
+  .kpi{padding:18px 20px}
+  .kpi .v{font-size:30px}
+  #calFig{height:320px}
+  .duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start}
+  .duo>.card{margin:0}
+  #calCard[style*="none"]+.card{grid-column:1/-1}
+  #wFig{height:260px!important}
+  .cal{gap:6px}
+  .cal button{aspect-ratio:auto;height:40px}
+
+  /* foods */
+  #v-foods .search{max-width:480px}
+  #foodList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+  #foodList li:nth-child(2){border-top:0}
+
+  /* goals */
+  .goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+
+  /* sheet becomes a centered dialog */
+  .sheet{top:50%;bottom:auto;left:50%;right:auto;width:min(520px,calc(100vw - 48px));margin:0;border-radius:24px;padding:26px 26px 24px;transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;transition:transform .32s var(--ease),opacity .22s;max-height:88vh;box-shadow:0 24px 80px rgb(0 0 0/.25)}
+  .sheet.on{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
+  .grab{display:none}
+  .toast{bottom:32px;left:calc(50% + var(--side) / 2)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -239,11 +315,14 @@ details.more[open] summary::before{content:"− "}
   <section class="view" id="v-today">
     <header class="top">
       <button class="ibtn" id="prevDay" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
-      <h1 id="dayTitle" style="text-align:center">Today<span class="sub" id="daySub"></span></h1>
+      <h1 id="dayTitle">Today<span class="sub" id="daySub"></span></h1>
       <button class="ibtn" id="nextDay" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      <div class="desk-only head-acts"><button class="pill" id="goToday">Today</button><input class="inp date-pick" id="datePick" type="date" aria-label="Pick a date"><button class="btn add-btn" id="addTop">+ Add food</button></div>
     </header>
 
-    <div class="card">
+    <div class="cols">
+    <div class="col-a">
+    <div class="card hero-card">
       <div class="hero">
         <div class="ring" id="ring">
           <svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="88"/><circle class="prog" id="ringProg" cx="100" cy="100" r="88"/><circle class="ovr" id="ringOver" cx="100" cy="100" r="88"/></svg>
@@ -257,14 +336,6 @@ details.more[open] summary::before{content:"− "}
       </div>
       <div class="macros" id="macros"></div>
     </div>
-
-    <div id="meals"></div>
-
-    <div class="card">
-      <div class="meal-head"><h2>Exercise <span class="tot num" id="exTot"></span></h2><button class="add" id="addEx" aria-label="Add exercise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
-      <ul class="items" id="exList"></ul>
-    </div>
-
     <div class="mini">
       <div class="card">
         <h2>Water <span class="tot num" id="waterTot"></span></h2>
@@ -274,6 +345,16 @@ details.more[open] summary::before{content:"− "}
         <h2>Weight</h2>
         <div class="wrow"><input class="inp num" id="wIn" type="number" inputmode="decimal" step="0.1" placeholder="--"><span class="lbl" id="wUnit">kg</span></div>
       </div>
+    </div>
+    </div>
+    <div class="col-b">
+    <div id="meals"></div>
+
+    <div class="card ex-card">
+      <div class="meal-head"><h2>Exercise <span class="tot num" id="exTot"></span></h2><button class="add" id="addEx" aria-label="Add exercise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      <ul class="items" id="exList"></ul>
+    </div>
+    </div>
     </div>
   </section>
 
@@ -294,6 +375,7 @@ details.more[open] summary::before{content:"− "}
       <div class="fig" id="calFig"><svg id="calSvg"></svg><div class="tip"></div></div>
       <div class="legend"><span><i style="background:var(--acc)"></i>Within goal</span><span><i style="background:var(--over)"></i>Over goal</span><span><i class="ln"></i>Goal</span></div>
     </div>
+    <div class="duo">
     <div class="card" id="calCard">
       <h2>Calendar <span class="tot">tap a day to open it</span></h2>
       <div class="cal" id="cal"></div>
@@ -301,6 +383,7 @@ details.more[open] summary::before{content:"− "}
     <div class="card">
       <h2>Weight <span class="tot num" id="wChange"></span></h2>
       <div class="fig" id="wFig" style="height:200px"><svg id="wSvg"></svg><div class="tip"></div></div>
+    </div>
     </div>
   </section>
 
@@ -314,6 +397,7 @@ details.more[open] summary::before{content:"− "}
   <!-- GOALS / SETTINGS -->
   <section class="view" id="v-goals">
     <header class="top"><h1>Goals<span class="sub">Targets, units and your data</span></h1></header>
+    <div class="goal-grid"><div class="gcol">
     <div class="card">
       <h2>Daily targets</h2>
       <div style="margin-top:8px">
@@ -339,6 +423,7 @@ details.more[open] summary::before{content:"− "}
       <button class="btn ghost" id="calcBtn">Calculate</button>
       <div class="calc-out" id="calcOut"></div>
     </div>
+    </div><div class="gcol">
     <div class="card">
       <h2>Preferences</h2>
       <div style="margin-top:8px">
@@ -359,6 +444,7 @@ details.more[open] summary::before{content:"− "}
       </div>
       <input type="file" id="impFile" accept="application/json,.json" hidden>
     </div>
+    </div></div>
     <p class="foot">Ctracker v1</p>
   </section>
 </div>
@@ -366,10 +452,13 @@ details.more[open] summary::before{content:"− "}
 <button class="fab" id="fab" aria-label="Add food"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
 
 <div class="tabs"><nav>
+  <div class="brand desk-only"><svg viewBox="0 0 512 512" aria-hidden="true"><circle cx="256" cy="256" r="150" fill="none" stroke="var(--card2)" stroke-width="56"/><circle cx="256" cy="256" r="150" fill="none" stroke="var(--acc)" stroke-width="56" stroke-linecap="round" stroke-dasharray="660 943" transform="rotate(-90 256 256)"/></svg>Ctracker</div>
+  <button class="btn add-btn desk-only" id="addSide">+ Add food</button>
   <a href="#today" data-v="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</a>
   <a href="#stats" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Progress</a>
   <a href="#foods" data-v="foods"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Foods</a>
   <a href="#goals" data-v="goals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Goals</a>
+  <div class="keys desk-only"><div><kbd>A</kbd> Add food</div><div><kbd>E</kbd> Add exercise</div><div><kbd>←</kbd><kbd>→</kbd> Change day</div><div><kbd>T</kbd> Today</div><div><kbd>1</kbd>-<kbd>4</kbd> Switch page</div></div>
 </nav></div>
 
 <div class="scrim" id="scrim"></div>
@@ -438,7 +527,7 @@ $('#toastBtn').onclick = () => { if (undoFn) { undoFn(); undoFn = null } $('#toa
 
 /* ---------- sheet ---------- */
 const openSheet = html => { $('#sheetBody').innerHTML = html; $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); setTimeout(() => { const f = $('#sheet [autofocus]'); if (f && matchMedia('(pointer:fine)').matches) f.focus() }, 350) };
-const closeSheet = () => { $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on') };
+const closeSheet = () => { if ($('#sheet').contains(document.activeElement)) document.activeElement.blur(); $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on') };
 $('#scrim').onclick = closeSheet;
 addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet() });
 const confirmSheet = (title, msg, okLabel, fn) => {
@@ -472,6 +561,8 @@ const dayLabel = d => {
 function renderToday() {
   const k = key(cur), d = getDay(k), st = S.settings;
   $('#dayTitle').firstChild.textContent = dayLabel(cur);
+  $('#datePick').value = key(cur);
+  $('#goToday').style.visibility = key(cur) === key(today()) ? 'hidden' : 'visible';
   $('#daySub').textContent = cur.toLocaleDateString(undefined, {month:'long', day:'numeric', year: cur.getFullYear() !== today().getFullYear() ? 'numeric' : undefined});
   const food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), n = food - ex, rem = st.goal - n;
   const over = rem < 0, p = Math.max(0, Math.min(1, n / st.goal));
@@ -842,6 +933,28 @@ $('#demoBtn').onclick = () => confirmSheet('Load demo data?', 'Fills the last 90
   }
   S.foods = Object.values(menu).flat().slice(0, 8).map(([n,c,p,cb,f]) => ({id: uid(), name: n, cal: c, p, c: cb, f, uses: 0}));
   save(); route(); toast('Demo data loaded', () => { S = old; save(); route() });
+});
+
+/* ---------- desktop controls ---------- */
+const addFood = () => { if (document.body.dataset.view !== 'today') location.hash = 'today'; setTimeout(() => foodSheet({meal: mealFor()}), 0) };
+$('#addSide').onclick = addFood;
+$('#addTop').onclick = addFood;
+$('#goToday').onclick = () => { cur = today(); renderToday() };
+$('#datePick').addEventListener('change', e => { if (e.target.value) { cur = parse(e.target.value); renderToday() } });
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'select' || tag === 'textarea' || $('#sheet').classList.contains('on')) return;
+  const v = document.body.dataset.view, k = e.key.toLowerCase();
+  if (k === 'a' || k === 'n') { e.preventDefault(); addFood() }
+  else if (k === 'e') { e.preventDefault(); if (v !== 'today') location.hash = 'today'; setTimeout(() => exSheet({}), 0) }
+  else if (k === 't') { cur = today(); if (v === 'today') renderToday(); else location.hash = 'today' }
+  else if (['1','2','3','4'].includes(k)) location.hash = VIEWS[+k - 1];
+  else if (k === 'arrowleft' || k === 'arrowright') {
+    const d = k === 'arrowleft' ? -1 : 1;
+    if (v === 'today') shift(d);
+    else if (v === 'stats') { if (d < 0) rOff--; else if (rOff < 0) rOff++; renderStats() }
+  }
 });
 
 /* ---------- boot ---------- */
