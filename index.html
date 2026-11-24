@@ -1251,14 +1251,14 @@ function renderMe() {
   $('#meWch').textContent = wch == null ? '' : `${wch > 0 ? '+' : ''}${wch.toFixed(1)} ${u}`;
 }
 function renderProfile() {
-  const P = prof(), imp = S.settings.unit === 'lb';
+  const P = prof(), isImp = S.settings.unit === 'lb';
   $$('[data-prof]').forEach(i => { const k = i.dataset.prof; i.value =
     k === 'startWeight' ? (P.startWeight ? +toUnit(P.startWeight).toFixed(1) : '') :
     k === 'heightCm' ? (P.heightCm ? +P.heightCm.toFixed(1) : '') :
     k === 'ft' ? (P.heightCm ? Math.floor(P.heightCm / 2.54 / 12) : '') :
     k === 'in' ? (P.heightCm ? Math.round(P.heightCm / 2.54 % 12) : '') : (P[k] || '') });
   $$('#profSex button').forEach(b => b.classList.toggle('on', b.dataset.v === P.sex));
-  $('#phM').hidden = imp; $('#phI').hidden = !imp;
+  $('#phM').hidden = isImp; $('#phI').hidden = !isImp;
   $$('.uLbl2').forEach(x => x.textContent = `(${S.settings.unit})`);
 }
 $$('[data-prof]').forEach(i => i.addEventListener('change', () => {
@@ -1471,11 +1471,11 @@ function logRecipeSheet(r) {
 
 /* ================= GOALS ================= */
 function renderGoals() {
-  const st = S.settings, imp = st.unit === 'lb';
-  $$('[data-set]').forEach(i => { const k = i.dataset.set; i.value = k === 'goalWeight' ? (st.goalWeight ? +toUnit(st.goalWeight).toFixed(1) : '') : k === 'waterGoal' ? (imp() ? Math.round(st.waterGoal / OZ) : +(st.waterGoal / 1000).toFixed(2)) : st[k] });
-  $('#wgUnit').textContent = imp() ? '(oz)' : '(L)';
+  const st = S.settings, isImp = st.unit === 'lb';
+  $$('[data-set]').forEach(i => { const k = i.dataset.set; i.value = k === 'goalWeight' ? (st.goalWeight ? +toUnit(st.goalWeight).toFixed(1) : '') : k === 'waterGoal' ? (isImp ? Math.round(st.waterGoal / OZ) : +(st.waterGoal / 1000).toFixed(2)) : st[k] });
+  $('#wgUnit').textContent = isImp ? '(oz)' : '(L)';
   $('#gwUnit').textContent = `(${st.unit})`; $$('.uLbl').forEach(x => x.textContent = st.unit);
-  $('#hMetric').hidden = imp; $('#hImp').hidden = !imp;
+  $('#hMetric').hidden = isImp; $('#hImp').hidden = !isImp;
   const aim = $('#cAim'), prev = aim.value || '-0.5', steps = [2, 1.5, 1, .5];
   aim.innerHTML = steps.map(x => `<option value="${-x}">Lose ${x} ${st.unit} / week</option>`).join('') + '<option value="0">Maintain</option>' + steps.slice().reverse().map(x => `<option value="${x}">Gain ${x} ${st.unit} / week</option>`).join('');
   aim.value = prev;
@@ -1493,11 +1493,11 @@ $$('[data-set]').forEach(i => i.addEventListener('change', () => {
   save(); toast('Saved');
 }));
 $('#calcBtn').onclick = () => {
-  const imp = S.settings.unit === 'lb';
-  const a = +$('#cAge').value, h = imp ? (+$('#cFt').value || 0) * 30.48 + (+$('#cIn').value || 0) * 2.54 : +$('#cH').value, w = fromUnit(+$('#cW').value);
+  const isImp = S.settings.unit === 'lb';
+  const a = +$('#cAge').value, h = isImp ? (+$('#cFt').value || 0) * 30.48 + (+$('#cIn').value || 0) * 2.54 : +$('#cH').value, w = fromUnit(+$('#cW').value);
   if (!a || !h || !w) { toast('Fill in age, height and weight'); return }
   const bmr = 10 * w + 6.25 * h - 5 * a + ($('#cSex').value === 'm' ? 5 : -161);
-  const tdee = Math.round(bmr * +$('#cAct').value / 10) * 10, target = Math.round((tdee + +$('#cAim').value * (imp ? 3500 : 7700) / 7) / 10) * 10;
+  const tdee = Math.round(bmr * +$('#cAct').value / 10) * 10, target = Math.round((tdee + +$('#cAim').value * (isImp ? 3500 : 7700) / 7) / 10) * 10;
   const floor = $('#cSex').value === 'm' ? 1500 : 1200, final = Math.max(target, 800), low = target < floor;
   const pr = Math.round(w * 1.8), fat = Math.round(final * .28 / 9), carbs = Math.max(0, Math.round((final - pr * 4 - fat * 9) / 4));
   const o = $('#calcOut'); o.classList.add('on');
