@@ -814,10 +814,10 @@ function renderToday() {
   const over = rem < 0, p = Math.max(0, Math.min(1, n / st.goal));
   $('#ring').classList.toggle('is-over', over);
   requestAnimationFrame(() => {
-    // orange = what you ate; green covers the end of it by what you burned; what's left of the orange is your net
+    // orange = what you ate; green covers it from the start by what you burned; the orange still showing is your net
     const fF = Math.min(1, food / st.goal), fN = Math.max(0, Math.min(1, n / st.goal));
     if (over) { arc($('#ringProg'), 0, 1); arc($('#ringBurn'), 0, 0) }
-    else { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), fN, fF) }
+    else { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), 0, Math.min(fF, Math.min(ex, food) / st.goal)) }
     $('#ringOver').style.strokeDashoffset = over ? C * (1 - Math.min(1, -rem / st.goal)) : C;
   });
   tween($('#remain'), Math.abs(rem));
