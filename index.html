@@ -251,6 +251,21 @@ details.more[open] summary::before{content:"− "}
 .bandlbl i{width:10px;height:10px;border-radius:3px;display:inline-block}
 @media (max-width:420px){.cm-d .k{display:none}.cm-d{padding:6px}.cm-d .dot{width:6px;height:6px;right:auto;left:6px;top:auto;bottom:6px}}
 
+.cm-pop{position:fixed;z-index:40;width:270px;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:0 14px 44px rgb(0 0 0/.18),0 0 0 1px var(--line);pointer-events:none;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s,transform .22s var(--ease)}
+.cm-pop.on{opacity:1;transform:none}
+.cm-pop .ph{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.cm-pop .ph b{font:600 15px "Inter Tight",sans-serif}
+.cm-pop .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent);white-space:nowrap}
+.cm-pop ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cm-pop li{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px}
+.cm-pop li .v{color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px}
+.cm-pop .ck{width:18px;height:18px;border-radius:50%;display:grid;place-items:center}
+.cm-pop .ck.y{background:var(--lv0);color:#fff}
+.cm-pop .ck.n{box-shadow:inset 0 0 0 1.5px var(--line)}
+.cm-pop .ck svg{width:11px;height:11px}
+.cm-pop li.no span:nth-child(2){color:var(--mute)}
+.cm-pop .pf{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
+
 /* recipes */
 [hidden]{display:none!important}
 .rgrid{display:grid;gap:14px}
@@ -489,6 +504,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
       <div class="cm-grid" id="cmGrid"></div>
     </div>
     <div class="cm-legend" id="cmLegend"></div>
+    <div class="cm-pop" id="cmPop" role="tooltip"></div>
   </section>
 
   <!-- FOODS -->
@@ -1087,6 +1103,38 @@ function renderCal() {
 }
 $('#cmGrid').onclick = e => { const b = e.target.closest('[data-k]'); if (b) { cur = parse(b.dataset.k); location.hash = 'diary' } };
 $('#cmPrev').onclick = () => { cmOff--; renderCal() };
+const CK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+function dayChecklist(k) {
+  const d = getDay(k), st = S.settings, food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), n = food - ex, has = logged(d);
+  const pro = sum(d.entries, e => e.p), meals = ['breakfast','lunch','dinner'].filter(m => d.entries.some(e => e.meal === m)).length;
+  const over = n - st.goal;
+  const rows = [
+    ['Calorie goal', has && level(n) === 0, has ? `${fmt(n)} / ${fmt(st.goal)}` : 'nothing logged'],
+    ['Protein goal', pro >= st.protein && st.protein > 0, `${fmt(pro)} / ${fmt(st.protein)} g`],
+    ['Water', (d.water || 0) >= st.water && st.water > 0, `${d.water || 0} / ${st.water}`],
+    ['Exercise', d.exercise.length > 0, d.exercise.length ? `${fmt(ex)} kcal` : 'none'],
+    ['All 3 meals', meals === 3, `${meals} / 3`],
+    ['Weigh-in', d.weight != null, d.weight != null ? `${+toUnit(d.weight).toFixed(1)} ${st.unit}` : 'none']
+  ];
+  const done = rows.filter(r => r[1]).length, lv = has ? level(n) : null;
+  return `<div class="ph"><b>${parse(k).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'})}</b>${lv != null ? `<span class="tag" style="--c:var(--lv${lv})">${LV[lv]}${over > 0 ? ` · +${fmt(over)}` : ''}</span>` : ''}</div>
+    <ul>${rows.map(([l, ok, v]) => `<li class="${ok ? '' : 'no'}"><span class="ck ${ok ? 'y' : 'n'}">${ok ? CK : ''}</span><span>${l}</span><span class="v">${esc(v)}</span></li>`).join('')}</ul>
+    <div class="pf">${done} of ${rows.length} done · click to open</div>`;
+}
+let popT;
+$('#cmGrid').addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const b = e.target.closest('.cm-d[data-k]'); if (!b || b.classList.contains('fut')) return;
+  const pop = $('#cmPop'); clearTimeout(popT);
+  pop.innerHTML = dayChecklist(b.dataset.k);
+  const r = b.getBoundingClientRect(), pw = 270, ph = pop.offsetHeight || 260, gap = 10;
+  let x = r.right + gap; if (x + pw > innerWidth - 12) x = r.left - pw - gap; if (x < 12) x = Math.max(12, Math.min(innerWidth - pw - 12, r.left));
+  let y = r.top + r.height / 2 - ph / 2; y = Math.max(12, Math.min(innerHeight - ph - 12, y));
+  pop.style.left = x + 'px'; pop.style.top = y + 'px'; pop.classList.add('on');
+});
+$('#cmGrid').addEventListener('pointerout', e => { if (!e.relatedTarget || !e.relatedTarget.closest || e.relatedTarget.closest('.cm-d') !== e.target.closest('.cm-d')) popT = setTimeout(() => $('#cmPop').classList.remove('on'), 60) });
+addEventListener('hashchange', () => $('#cmPop').classList.remove('on'));
+addEventListener('scroll', () => $('#cmPop').classList.remove('on'), {passive:true});
 $('#cmNext').onclick = () => { if (cmOff < 0) { cmOff++; renderCal() } };
 $('#cmToday').onclick = () => { cmOff = 0; renderCal() };
 
