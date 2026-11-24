@@ -77,9 +77,9 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:14;stroke-linecap:round}
 .ring .trk{stroke:var(--card2)}
-.ring .prog,.ring .burn{transition:stroke-dasharray 1.1s var(--ease),stroke-dashoffset 1.1s var(--ease),stroke .4s,opacity .3s}
+.ring .prog,.ring .burn,.ring .eat{transition:stroke-dasharray 1.1s var(--ease),stroke-dashoffset 1.1s var(--ease),stroke .4s,opacity .3s}
 .ring .prog{stroke:var(--acc)}
-.ring .burn{stroke:var(--good)}
+.ring .burn,.ring .eat{stroke:var(--good)}
 .ring.grow .burn{stroke:color-mix(in srgb,var(--good) 50%,var(--card2))}
 .ring .ovr{stroke:var(--over);transition:stroke-dashoffset 1.1s var(--ease) .3s}
 .ring.is-over .prog{stroke:var(--over);opacity:.35}
@@ -227,6 +227,8 @@ details.more[open] summary::before{content:"− "}
 .setrow .inp{width:120px;height:42px;text-align:right}
 .setrow .seg{width:auto}
 .setrow .seg button{padding:0 12px;height:32px}
+.setrow.stack{flex-direction:column;align-items:stretch;gap:10px}
+.setrow.stack .seg{width:100%}
 .calc-out{margin-top:12px;padding:14px;border-radius:14px;background:var(--card2);display:none}
 .calc-out.on{display:block;animation:viewIn .4s var(--ease)}
 .muted{color:var(--mute);font-size:13px}
@@ -462,7 +464,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     <div class="card hero-card">
       <div class="hero">
         <div class="ring" id="ring">
-          <svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="88"/><circle class="prog" id="ringProg" cx="100" cy="100" r="88"/><circle class="burn" id="ringBurn" cx="100" cy="100" r="88"/><circle class="ovr" id="ringOver" cx="100" cy="100" r="88"/></svg>
+          <svg viewBox="0 0 200 200"><circle class="trk" cx="100" cy="100" r="88"/><circle class="eat" id="ringEat" cx="100" cy="100" r="88"/><circle class="prog" id="ringProg" cx="100" cy="100" r="88"/><circle class="burn" id="ringBurn" cx="100" cy="100" r="88"/><circle class="ovr" id="ringOver" cx="100" cy="100" r="88"/></svg>
           <div class="mid"><div class="big num" id="remain">0</div><div class="cap" id="remainCap">kcal left</div></div>
         </div>
         <div class="stats3">
@@ -648,7 +650,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     <div class="card">
       <h2>Appearance</h2>
       <div style="margin-top:8px">
-        <div class="setrow"><div><div>Calorie ring</div><div class="muted">Grow adds your burn to the ring as earned room. Net shows only net calories. Start and End show your burn in green over what you ate.</div></div><div class="seg" id="ringSeg"><button data-v="grow">Grow</button><button data-v="net">Net</button><button data-v="start">Start</button><button data-v="end">End</button></div></div>
+        <div class="setrow stack"><div><div>Calorie ring</div><div class="muted">Grow adds your burn to the ring as earned room. Net shows only net calories. Start and End show your burn in green over what you ate.</div></div><div class="seg" id="ringSeg"><button data-v="grow">Grow</button><button data-v="net">Net</button><button data-v="start">Start</button><button data-v="end">End</button></div></div>
         <div class="setrow"><span>Theme</span><div class="seg" id="themeSeg"><button data-v="system">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
       </div>
     </div>
@@ -799,7 +801,7 @@ const C = 2 * Math.PI * 88;
 $('#ringOver').style.strokeDasharray = C; $('#ringOver').style.strokeDashoffset = C;
 // draw an arc from fraction a to b of the ring
 const arc = (el, a, b) => { const len = Math.max(0, b - a) * C; el.style.strokeDasharray = `${len} ${C}`; el.style.strokeDashoffset = -a * C; el.style.opacity = len > .5 ? 1 : 0 };
-arc($('#ringProg'), 0, 0); arc($('#ringBurn'), 0, 0);
+arc($('#ringProg'), 0, 0); arc($('#ringBurn'), 0, 0); arc($('#ringEat'), 0, 0);
 
 const dayLabel = d => {
   const diff = Math.round((d - today()) / 864e5);
@@ -818,10 +820,12 @@ function renderToday() {
   requestAnimationFrame(() => {
     // orange = what you ate; green covers it from the start by what you burned; the orange still showing is your net
     const fF = Math.min(1, food / st.goal), fN = Math.max(0, Math.min(1, n / st.goal));
+    if (st.ring !== 'grow' || over) arc($('#ringEat'), 0, 0);
     if (over) { arc($('#ringProg'), 0, 1); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'grow') { // ring size = goal + burn; the earned room shows as a soft green zone at the end
-      const cap = st.goal + Math.max(0, ex), fo = Math.min(1, food / cap), gs = Math.max(st.goal, food) / cap;
-      arc($('#ringProg'), 0, fo); arc($('#ringBurn'), Math.min(1, gs), ex > 0 ? 1 : 0);
+      // orange = eaten up to your goal; solid green = exercise calories you've eaten into; soft green = earned room still left
+      const cap = st.goal + Math.max(0, ex), fo = Math.min(1, food / cap), g = st.goal / cap;
+      arc($('#ringProg'), 0, Math.min(fo, g)); arc($('#ringEat'), g, Math.max(g, fo)); arc($('#ringBurn'), Math.max(g, fo), ex > 0 ? 1 : 0);
     }
     else if (st.ring === 'net') { arc($('#ringProg'), 0, fN); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'end') { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), fN, fF) }
