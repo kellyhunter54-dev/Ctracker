@@ -1083,11 +1083,11 @@ $('#calcBtn').onclick = () => {
   const a = +$('#cAge').value, h = imp ? (+$('#cFt').value || 0) * 30.48 + (+$('#cIn').value || 0) * 2.54 : +$('#cH').value, w = fromUnit(+$('#cW').value);
   if (!a || !h || !w) { toast('Fill in age, height and weight'); return }
   const bmr = 10 * w + 6.25 * h - 5 * a + ($('#cSex').value === 'm' ? 5 : -161);
-  const tdee = bmr * +$('#cAct').value, target = Math.round((tdee + +$('#cAim').value * (imp ? 3500 : 7700) / 7) / 10) * 10;
-  const floor = $('#cSex').value === 'm' ? 1500 : 1200, final = Math.max(target, floor);
+  const tdee = Math.round(bmr * +$('#cAct').value / 10) * 10, target = Math.round((tdee + +$('#cAim').value * (imp ? 3500 : 7700) / 7) / 10) * 10;
+  const floor = $('#cSex').value === 'm' ? 1500 : 1200, final = Math.max(target, 800), low = target < floor;
   const pr = Math.round(w * 1.8), fat = Math.round(final * .28 / 9), carbs = Math.max(0, Math.round((final - pr * 4 - fat * 9) / 4));
   const o = $('#calcOut'); o.classList.add('on');
-  o.innerHTML = `<div class="row" style="justify-content:space-between"><span class="muted">Maintenance</span><b class="num">${fmt(tdee)} kcal</b></div><div class="row" style="justify-content:space-between;margin:6px 0 4px"><span class="muted">Suggested target</span><b class="num" style="font-size:22px;color:var(--acc)">${fmt(final)} kcal</b></div><p class="muted" style="margin:0 0 12px">Protein ${pr}g · Carbs ${carbs}g · Fat ${fat}g${final > target ? '. Raised to a safe minimum.' : ''}</p><button class="btn" id="useCalc">Use these targets</button>`;
+  o.innerHTML = `<div class="row" style="justify-content:space-between"><span class="muted">Maintenance</span><b class="num">${fmt(tdee)} kcal</b></div><div class="row" style="justify-content:space-between;margin:6px 0 4px"><span class="muted">Suggested target</span><b class="num" style="font-size:22px;color:var(--acc)">${fmt(final)} kcal</b></div><p class="muted" style="margin:0 0 ${low ? 4 : 12}px">Protein ${pr}g · Carbs ${carbs}g · Fat ${fat}g ${Math.abs(tdee - final) >= 10 ? ` · ${fmt(Math.abs(tdee - final))} kcal daily ${tdee > final ? 'deficit' : 'surplus'}` : ''}</p>${low ? `<p style="margin:0 0 12px;font-size:13px;color:var(--over)">Below the usual ${fmt(floor)} kcal minimum. Hard to sustain, so keep an eye on energy and protein.</p>` : ''}<button class="btn" id="useCalc">Use these targets</button>`;
   $('#useCalc').onclick = () => { Object.assign(S.settings, {goal: final, protein: pr, carbs, fat}); save(); renderGoals(); o.classList.remove('on'); toast('Targets updated') };
 };
 
