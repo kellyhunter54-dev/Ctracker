@@ -24,19 +24,26 @@ Everything lives in the browser's `localStorage` under the key `ctracker.v1`, on
 
 Open `index.html` in a browser. That's it.
 
-### Use it on your phone (installable)
+### Install it on your phone (or computer)
 
-1. In the GitHub repo: **Settings > Pages > Source: Deploy from a branch**, pick `main` and `/ (root)`, save.
-2. Open the Pages URL on your phone.
-3. iPhone: Share > **Add to Home Screen**. Android: menu > **Install app**.
+Ctracker is an installable web app (PWA), hosted free on GitHub Pages.
 
-It then opens full screen like an app and works offline (`sw.js` caches it). When you change the code, bump `VERSION` in `sw.js` so installed copies refresh.
+1. One-time setup: in this repo go to **Settings > Pages**, set **Source: Deploy from a branch**, branch **main**, folder **/ (root)**, and save. After a minute it is live at **https://kellyhunter54-dev.github.io/Ctracker/**
+2. Open that link on your phone:
+   - **iPhone (Safari):** Share button > **Add to Home Screen** > Add
+   - **Android (Chrome):** Ctracker **Settings > Install the app** > Install (or the browser menu > Install app)
+   - **Computer (Chrome/Edge):** the install icon in the address bar, or Settings > Install the app
+3. It opens full screen with its own icon, works offline, and shows "A new version of Ctracker is ready" when an update has been pushed.
+
+Your data stays on each device. On iPhone the installed app has its own storage, separate from Safari, so if you logged anything in Safari first, move it with **Settings > Copy backup** in Safari and **Paste backup** in the app.
+
+When you change the code, bump `VERSION` in `sw.js` so installed copies get the update notice.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
 | `index.html` | The whole app (markup, styles, logic) |
-| `manifest.webmanifest` | App name, icon and colours for "install" |
-| `sw.js` | Service worker for offline use |
-| `icon.svg` | App icon |
+| `manifest.webmanifest` | App name, icons, colours and home-screen shortcuts for "install" |
+| `sw.js` | Service worker: offline use and update notices |
+| `icon.svg`, `icons/` | App icons (PNG sizes for Android/iPhone, maskable icon) |

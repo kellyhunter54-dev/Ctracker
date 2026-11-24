@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ctracker">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Ctracker</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -328,6 +331,7 @@ details.more[open] summary::before{content:"− "}
 .ing .rm svg{width:16px;height:16px}
 .ing-labels{display:none}
 .ta{height:auto;padding:12px 14px;line-height:1.5;resize:vertical;min-height:96px;font-family:inherit}
+.steps-ol{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14px}
 .datasum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
 .datasum div{background:var(--card2);border-radius:12px;padding:10px 8px;text-align:center}
 .datasum b{display:block;font-size:20px;font-weight:600}
@@ -610,6 +614,10 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
   <section class="view" id="v-preferences">
     <header class="top"><h1>Settings<span class="sub">Units, appearance and your data</span></h1></header>
     <div class="goal-grid"><div class="gcol">
+    <div class="card" id="installCard">
+      <h2>Install the app</h2>
+      <div id="installBody" style="margin-top:8px"></div>
+    </div>
     <div class="card">
       <h2>Units</h2>
       <div style="margin-top:8px">
@@ -767,9 +775,9 @@ const tween = (el, to, f = fmt) => {
 
 /* ---------- toast ---------- */
 let toastT, undoFn;
-const toast = (msg, undo) => {
-  $('#toastMsg').textContent = msg; undoFn = undo; $('#toastBtn').style.display = undo ? '' : 'none';
-  $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('on'), 4000);
+const toast = (msg, undo, label = 'Undo', ms = 4000) => {
+  $('#toastMsg').textContent = msg; undoFn = undo; $('#toastBtn').style.display = undo ? '' : 'none'; $('#toastBtn').textContent = label;
+  $('#toast').classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => $('#toast').classList.remove('on'), ms);
 };
 $('#toastBtn').onclick = () => { if (undoFn) { undoFn(); undoFn = null } $('#toast').classList.remove('on') };
 
@@ -787,6 +795,7 @@ const confirmSheet = (title, msg, okLabel, fn) => {
 let cur = today();
 const VIEWS = ['diary','stats','calendar','me','foods','recipes','goals','preferences'];
 const route = () => {
+  if (location.hash === '#diary-add') { history.replaceState(null, '', '#diary'); setTimeout(() => foodSheet({meal: mealFor()}), 300) }
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'diary';
   document.body.dataset.view = v;
   $$('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
@@ -1532,7 +1541,7 @@ function renderPrefs() {
   $$('#unitSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.unit));
   $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.theme));
   $$('#ringSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === (st.ring || 'grow')));
-  renderProfile();
+  renderProfile(); renderInstall();
   $('#cupKind').innerHTML = CUPS.map(([v,l,ml]) => `<option value="${v}">${l}${ml && !l.startsWith('Stanley') ? ` · ${cupVol(ml)}` : ''}</option>`).join('');
   $('#cupKind').value = st.cupKind || 'glass';
   $('#cupUnit').textContent = imp() ? '(oz)' : '(ml)';
@@ -1654,6 +1663,21 @@ addEventListener('keydown', e => {
   }
 });
 
+/* ---------- install as an app ---------- */
+let installEvt = null;
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (document.body.dataset.view === 'preferences') renderInstall() });
+addEventListener('appinstalled', () => { installEvt = null; toast('Ctracker installed'); renderInstall() });
+function renderInstall() {
+  const b = $('#installBody'); if (!b) return;
+  const shareIc = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/></svg>';
+  if (standalone()) b.innerHTML = '<p class="muted" style="margin:0">You are using the installed app. Updates arrive on their own.</p>';
+  else if (installEvt) { b.innerHTML = '<p class="muted" style="margin:0 0 12px">Add Ctracker to your home screen or desktop. It opens full screen like a normal app and works offline.</p><button class="btn" id="installBtn">Install Ctracker</button>'; $('#installBtn').onclick = async () => { installEvt.prompt(); const r = await installEvt.userChoice.catch(() => null); installEvt = null; renderInstall(); if (r && r.outcome === 'accepted') toast('Installing...') } }
+  else if (isIOS()) b.innerHTML = `<p class="muted" style="margin:0 0 10px">On iPhone, open this page in Safari, then:</p><ol class="steps-ol"><li>Tap the Share button ${shareIc}</li><li>Choose <b>Add to Home Screen</b></li><li>Tap <b>Add</b></li></ol>`;
+  else b.innerHTML = '<p class="muted" style="margin:0">Open this page on your phone (Chrome on Android, Safari on iPhone) and an install option will appear here. On a computer, Chrome and Edge show an install icon in the address bar.</p>';
+}
+
 /* ---------- boot ---------- */
 if (!S.exNet) { netFix(S); save() }
 if (!location.hash) history.replaceState(null, '', '#diary');
@@ -1662,7 +1686,20 @@ route();
 let lastDay = key(today());
 setInterval(() => { const k = key(today()); if (k !== lastDay) { if (key(cur) === lastDay) cur = today(); lastDay = k; route() } }, 60000);
 // installable app (works when hosted on https, e.g. GitHub Pages)
-try { if ('serviceWorker' in navigator && location.protocol === 'https:' && window.self === window.top) navigator.serviceWorker.register('sw.js').catch(() => {}) } catch(e) {}
+try {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && window.self === window.top) {
+    navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(reg => {
+      const ask = w => { if (w && navigator.serviceWorker.controller) toast('A new version of Ctracker is ready', () => w.postMessage('skipWaiting'), 'Update', 30000) };
+      if (reg.waiting) ask(reg.waiting);
+      reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed') ask(w) }) });
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+    }).catch(() => {});
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload() } });
+  }
+  // ask the browser not to clear Ctracker's data when space runs low
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {});
+} catch(e) {}
 }
 </script>
 </body>
