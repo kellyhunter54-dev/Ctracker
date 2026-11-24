@@ -1,5 +1,5 @@
 // Offline cache for Ctracker. Bump VERSION when you change files so phones pick up the update.
-const VERSION = 'ctracker-v20';
+const VERSION = 'ctracker-v21';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {

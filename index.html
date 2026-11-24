@@ -820,7 +820,7 @@ function renderToday() {
     if (over) { arc($('#ringProg'), 0, 1); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'net') { arc($('#ringProg'), 0, fN); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'end') { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), fN, fF) }
-    else { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), 0, Math.min(fF, Math.min(ex, food) / st.goal)) }
+    else { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), 0, Math.max(0, fF - fN)) } // green = only the part of the burn that fits, so visible orange always equals net
     $('#ringBurn').style.transitionDelay = st.ring === 'end' ? '.25s' : '0s';
     $('#ringOver').style.strokeDashoffset = over ? C * (1 - Math.min(1, -rem / st.goal)) : C;
   });
