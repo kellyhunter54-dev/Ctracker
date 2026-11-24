@@ -170,6 +170,8 @@ details.more[open] summary::before{content:"− "}
 .chip{flex:none;height:34px;padding:0 12px;border-radius:99px;background:var(--card2);font-size:13px;font-weight:500;white-space:nowrap;transition:background .2s,transform .2s var(--spring)}
 .chip:hover{background:var(--acc2)}.chip:active{transform:scale(.94)}
 .chip small{color:var(--mute);margin-left:6px}
+.chip.on{background:var(--acc);color:#fff}
+.chip.on:hover{background:var(--acc)}
 .preview{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px;border-radius:14px;background:var(--acc2);margin-bottom:14px;color:var(--acc);font-weight:500;font-size:14px}
 .preview b{font:600 22px "Inter Tight",sans-serif}
 
@@ -582,6 +584,10 @@ const toUnit = kg => S.settings.unit === 'lb' ? kg * LB : kg;
 const fromUnit = v => S.settings.unit === 'lb' ? v / LB : v;
 const net = d => sum(d.entries, e => e.cal) - sum(d.exercise, e => e.cal);
 const logged = d => d && d.entries && d.entries.length > 0;
+// entries linked to a saved food / recipe: by id, or (older entries) by the same name
+const linkedEntries = (kind, obj) => { const out = [], nm = (obj.name || '').toLowerCase(); Object.values(S.days).forEach(d => d.entries.forEach(e => { if (e[kind] === obj.id || (!e.food && !e.recipe && e.name.toLowerCase() === nm)) out.push(e) })); return out };
+const applyPer = (list, kind, id, name, per) => list.forEach(e => { const s = e.servings || 1; Object.assign(e, {name, cal: Math.round(per.cal * s), p: +((per.p || 0) * s).toFixed(1), c: +((per.c || 0) * s).toFixed(1), f: +((per.f || 0) * s).toFixed(1), [kind]: id}) });
+const syncBox = n => n ? `<label class="chk"><input type="checkbox" id="syncPast" checked> Also update ${n} past log entr${n === 1 ? 'y' : 'ies'}</label>` : '';
 const mealFor = () => { const h = new Date().getHours() + new Date().getMinutes()/60; return h < 10.5 ? 'breakfast' : h < 15 ? 'lunch' : h < 21 ? 'dinner' : 'snack' };
 const icon = {
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
@@ -758,11 +764,13 @@ function foodSheet(en) {
     const srv = parseFloat($('#fSrv').value) || 1, g = id => (parseFloat($(id).value) || 0) * srv;
     const name = $('#fName').value.trim(); if (!name) return;
     const item = {id: en.id || uid(), name, cal: Math.round(g('#fCal')), p: +g('#fP').toFixed(1), c: +g('#fC').toFixed(1), f: +g('#fF').toFixed(1), servings: srv, meal, t: en.t || Date.now()};
+    let sf = S.foods.find(f => f.name.toLowerCase() === name.toLowerCase());
+    const rc = S.recipes.find(r => r.name.toLowerCase() === name.toLowerCase());
+    if (sf) sf.uses = (sf.uses || 0) + (editing ? 0 : 1);
+    else if ($('#fSave') && $('#fSave').checked) { sf = {id: uid(), name, cal: +(item.cal/srv).toFixed(1), p: +(item.p/srv).toFixed(1), c: +(item.c/srv).toFixed(1), f: +(item.f/srv).toFixed(1), uses: 1}; S.foods.push(sf) }
+    if (sf) item.food = sf.id; else if (rc) item.recipe = rc.id;
     const k = key(cur), d = ensureDay(k);
     if (editing) d.entries = d.entries.map(x => x.id === en.id ? item : x); else d.entries.push(item);
-    const sf = S.foods.find(f => f.name.toLowerCase() === name.toLowerCase());
-    if (sf) sf.uses = (sf.uses || 0) + (editing ? 0 : 1);
-    else if ($('#fSave') && $('#fSave').checked) S.foods.push({id: uid(), name, cal: +(item.cal/srv).toFixed(1), p: +(item.p/srv).toFixed(1), c: +(item.c/srv).toFixed(1), f: +(item.f/srv).toFixed(1), uses: 1});
     save(); closeSheet(); renderToday(); toast(editing ? 'Updated' : `Added ${name}`);
   };
   if (editing) $('#fDel').onclick = () => {
@@ -771,23 +779,85 @@ function foodSheet(en) {
     toast(`Deleted ${rm.name}`, () => { ensureDay(k).entries.splice(idx, 0, rm); save(); renderToday() });
   };
 }
+const EX = [
+  {k:'walk', n:'Walking', speed:true}, {k:'run', n:'Running', speed:true},
+  {k:'cycle', n:'Cycling', met:[4, 6.8, 10]}, {k:'weights', n:'Weights', met:[3.5, 5, 6]},
+  {k:'hiit', n:'HIIT', met:[6, 8, 10]}, {k:'swim', n:'Swimming', met:[6, 8, 10]},
+  {k:'hike', n:'Hiking', met:[5, 6, 7.8]}, {k:'yoga', n:'Yoga', met:[2.5, 3, 4]}
+];
+const LEVELS = ['Light', 'Moderate', 'Hard'];
+// Walking/running: ACSM metabolic equations (speed + incline). Other activities: MET values. kcal = VO2 (ml/kg/min) x kg / 1000 x 5
+const exKcal = (c, kg) => {
+  const t = EX.find(x => x.k === c.type); if (!t || !(c.min > 0) || !(kg > 0)) return 0;
+  if (t.speed) {
+    if (!(c.kmh > 0)) return 0;
+    const mpm = c.kmh * 1000 / 60, g = (c.incline || 0) / 100;
+    const vo2 = c.type === 'walk' ? 3.5 + .1 * mpm + 1.8 * mpm * g : 3.5 + .2 * mpm + .9 * mpm * g;
+    return vo2 * kg / 1000 * 5 * c.min;
+  }
+  return t.met[c.level ?? 1] * 3.5 * kg / 1000 * 5 * c.min;
+};
+const spU = () => S.settings.unit === 'lb' ? 'mph' : 'km/h';
+const toSp = kmh => S.settings.unit === 'lb' ? kmh / 1.609344 : kmh;
+const fromSp = v => S.settings.unit === 'lb' ? v * 1.609344 : v;
+const exName = c => { const t = EX.find(x => x.k === c.type); return `${t.n} · ${+c.min.toFixed(0)} min${t.speed ? ` · ${+toSp(c.kmh).toFixed(1)} ${spU()}${c.incline ? ` · ${+(+c.incline).toFixed(1)}% incline` : ''}` : ` · ${LEVELS[c.level ?? 1].toLowerCase()}`}` };
 function exSheet(en) {
   const editing = !!en.id;
-  const presets = [['Walk 30 min',120],['Run 30 min',300],['Cycling 30 min',250],['Weights 45 min',200],['Yoga 30 min',100]];
+  const c = {type:'walk', kmh:5, incline:0, min:30, level:1, ...(S.settings.lastEx || {}), ...(en.calc || {})};
+  let mode = editing && !en.calc ? 'manual' : 'calc';
+  const kg = lastWeight('9999');
+  const customName = en.calc && en.name !== exName(en.calc) ? en.name : '';
   openSheet(`<h3>${editing ? 'Edit exercise' : 'Add exercise'}</h3>
+  <div class="seg" id="xMode" style="margin-bottom:16px"><button type="button" data-m="calc">Calculate</button><button type="button" data-m="manual">Enter calories</button></div>
   <form id="xForm" autocomplete="off">
-    ${editing ? '' : `<div class="sugg">${presets.map(([n,c]) => `<button type="button" class="chip" data-n="${n}" data-c="${c}">${n}<small class="num">${c}</small></button>`).join('')}</div>`}
-    <label class="field"><span>Activity</span><input class="inp" id="xName" required value="${esc(en.name || '')}" placeholder="e.g. Morning run" autofocus></label>
-    <label class="field"><span>Calories burned</span><input class="inp num" id="xCal" type="number" inputmode="numeric" min="0" required value="${en.cal ?? ''}"></label>
+    <div id="xCalc">
+      <div class="sugg" id="xType" style="flex-wrap:wrap;overflow:visible">${EX.map(t => `<button type="button" class="chip" data-t="${t.k}">${t.n}</button>`).join('')}</div>
+      <div class="grid2" id="xSpeedRow"><label class="field"><span>Speed (${spU()})</span><input class="inp num" id="xSp" type="number" inputmode="decimal" step="0.1" min="0" value="${+toSp(c.kmh).toFixed(1)}"></label><label class="field"><span>Incline (%)</span><input class="inp num" id="xInc" type="number" inputmode="decimal" step="0.5" min="0" value="${c.incline || 0}"></label></div>
+      <div class="field" id="xLevelRow"><span>Intensity</span><div class="seg" id="xLevel">${LEVELS.map((l,i) => `<button type="button" data-l="${i}">${l}</button>`).join('')}</div></div>
+      <div class="grid2"><label class="field"><span>Duration (min)</span><input class="inp num" id="xMin" type="number" inputmode="numeric" min="1" value="${c.min}"></label><label class="field"><span>Your weight (${S.settings.unit})</span><input class="inp num" id="xW" type="number" inputmode="decimal" step="0.1" min="0" value="${kg ? +toUnit(kg).toFixed(1) : ''}" placeholder="needed"></label></div>
+      <label class="field"><span>Name (optional)</span><input class="inp" id="xLbl" value="${esc(customName)}" placeholder=""></label>
+      <div class="preview"><span>Estimated burn</span><b class="num" id="xEst">0 kcal</b></div>
+    </div>
+    <div id="xManual">
+      <label class="field"><span>Activity</span><input class="inp" id="xName" value="${esc(en.calc ? '' : en.name || '')}" placeholder="e.g. Soccer"></label>
+      <label class="field"><span>Calories burned</span><input class="inp num" id="xCal" type="number" inputmode="numeric" min="0" value="${en.calc ? '' : en.cal ?? ''}"></label>
+    </div>
     <button class="btn" type="submit">${editing ? 'Save changes' : 'Add exercise'}</button>
     ${editing ? `<button class="btn danger" type="button" id="xDel" style="margin-top:6px">Delete</button>` : ''}
   </form>`);
-  $$('#sheet .chip').forEach(b => b.onclick = () => { $('#xName').value = b.dataset.n; $('#xCal').value = b.dataset.c });
+  const read = () => ({type: c.type, kmh: fromSp(+$('#xSp').value || 0), incline: +$('#xInc').value || 0, min: +$('#xMin').value || 0, level: c.level});
+  const upd = () => {
+    const t = EX.find(x => x.k === c.type), cur = read();
+    $$('#xType .chip').forEach(b => b.classList.toggle('on', b.dataset.t === c.type));
+    $$('#xLevel button').forEach(b => b.classList.toggle('on', +b.dataset.l === c.level));
+    $$('#xMode button').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+    $('#xSpeedRow').hidden = !t.speed; $('#xLevelRow').hidden = !!t.speed;
+    $('#xCalc').hidden = mode !== 'calc'; $('#xManual').hidden = mode !== 'manual';
+    $('#xLbl').placeholder = cur.min ? exName(cur) : t.n;
+    const k = exKcal(cur, fromUnit(+$('#xW').value || 0));
+    $('#xEst').textContent = k ? fmt(k) + ' kcal' : (+$('#xW').value ? 'add duration' : 'add your weight');
+  };
+  $('#xMode').onclick = e => { const b = e.target.closest('[data-m]'); if (b) { mode = b.dataset.m; upd() } };
+  $('#xType').onclick = e => { const b = e.target.closest('[data-t]'); if (b) { c.type = b.dataset.t; if (c.type === 'run' && read().kmh < 7) $('#xSp').value = +toSp(9).toFixed(1); if (c.type === 'walk' && read().kmh > 7.5) $('#xSp').value = +toSp(5).toFixed(1); upd() } };
+  $('#xLevel').onclick = e => { const b = e.target.closest('[data-l]'); if (b) { c.level = +b.dataset.l; upd() } };
+  $('#xCalc').addEventListener('input', upd); upd();
   $('#xForm').onsubmit = e => {
     e.preventDefault();
-    const k = key(cur), d = ensureDay(k), item = {id: en.id || uid(), name: $('#xName').value.trim(), cal: Math.round(+$('#xCal').value || 0)};
+    let item;
+    if (mode === 'calc') {
+      const cc = read(), w = fromUnit(+$('#xW').value || 0), cal = Math.round(exKcal(cc, w));
+      if (!cal) { toast(w ? 'Add a duration' + (EX.find(x => x.k === cc.type).speed ? ' and speed' : '') : 'Add your weight to calculate'); return }
+      item = {id: en.id || uid(), name: $('#xLbl').value.trim() || exName(cc), cal, calc: cc};
+      S.settings.lastEx = cc;
+      if (!kg && w) { const d0 = ensureDay(key(cur)); if (d0.weight == null) d0.weight = w }
+    } else {
+      const name = $('#xName').value.trim(), cal = Math.round(+$('#xCal').value || 0);
+      if (!name || !cal) { toast('Add an activity and calories'); return }
+      item = {id: en.id || uid(), name, cal};
+    }
+    const d = ensureDay(key(cur));
     if (editing) d.exercise = d.exercise.map(x => x.id === en.id ? item : x); else d.exercise.push(item);
-    save(); closeSheet(); renderToday(); toast(editing ? 'Updated' : 'Exercise added');
+    save(); closeSheet(); renderToday(); toast(editing ? 'Updated' : `Added ${fmt(item.cal)} kcal burned`);
   };
   if (editing) $('#xDel').onclick = () => {
     const k = key(cur), d = ensureDay(k), idx = d.exercise.findIndex(x => x.id === en.id), [rm] = d.exercise.splice(idx, 1);
@@ -943,7 +1013,7 @@ $('#foodQ').addEventListener('input', renderFoods);
 $('#foodList').addEventListener('click', e => {
   const a = e.target.closest('[data-fa]'), ed = e.target.closest('[data-fe]');
   if (a) { const f = S.foods.find(x => x.id === a.dataset.fa); const k = key(cur), d = ensureDay(k);
-    d.entries.push({id: uid(), name: f.name, cal: Math.round(f.cal), p: f.p||0, c: f.c||0, f: f.f||0, servings: 1, meal: mealFor(), t: Date.now()});
+    d.entries.push({id: uid(), name: f.name, cal: Math.round(f.cal), p: f.p||0, c: f.c||0, f: f.f||0, servings: 1, meal: mealFor(), t: Date.now(), food: f.id});
     f.uses = (f.uses || 0) + 1; save(); toast(`Logged ${f.name} to ${dayLabel(cur).toLowerCase()}`); }
   if (ed) savedFoodSheet(S.foods.find(x => x.id === ed.dataset.fe));
 });
@@ -954,11 +1024,15 @@ function savedFoodSheet(f) {
     <label class="field"><span>Name</span><input class="inp" id="sfN" required value="${esc(f.name || '')}" autofocus></label>
     <label class="field"><span>Calories per serving</span><input class="inp num" id="sfC" type="number" inputmode="decimal" step="any" min="0" required value="${f.cal ?? ''}"></label>
     <div class="grid3"><label class="field"><span>Protein g</span><input class="inp num" id="sfP" type="number" step="any" min="0" value="${f.p || ''}"></label><label class="field"><span>Carbs g</span><input class="inp num" id="sfCa" type="number" step="any" min="0" value="${f.c || ''}"></label><label class="field"><span>Fat g</span><input class="inp num" id="sfF" type="number" step="any" min="0" value="${f.f || ''}"></label></div>
+    ${editing ? syncBox(linkedEntries('food', f).length) : ''}
     <button class="btn" type="submit">Save</button>${editing ? '<button class="btn danger" type="button" id="sfDel" style="margin-top:6px">Delete</button>' : ''}</form>`);
   $('#sfForm').onsubmit = e => { e.preventDefault();
+    const old = structuredClone(S), past = editing ? linkedEntries('food', f) : [];
     const item = {id: f.id || uid(), name: $('#sfN').value.trim(), cal: +$('#sfC').value || 0, p: +$('#sfP').value || 0, c: +$('#sfCa').value || 0, f: +$('#sfF').value || 0, uses: f.uses || 0};
     if (editing) S.foods = S.foods.map(x => x.id === f.id ? item : x); else S.foods.push(item);
-    save(); closeSheet(); renderFoods(); };
+    const sync = $('#syncPast') && $('#syncPast').checked && past.length;
+    if (sync) applyPer(past, 'food', item.id, item.name, item);
+    save(); closeSheet(); renderFoods(); toast(sync ? `Saved and updated ${past.length} past entr${past.length === 1 ? 'y' : 'ies'}` : 'Saved', () => { S = old; save(); route() }) };
   if (editing) $('#sfDel').onclick = () => { const idx = S.foods.findIndex(x => x.id === f.id), [rm] = S.foods.splice(idx, 1); save(); closeSheet(); renderFoods(); toast(`Removed ${rm.name}`, () => { S.foods.splice(idx, 0, rm); save(); renderFoods() }) };
 }
 
@@ -1005,6 +1079,7 @@ function recipeSheet(r) {
     <button type="button" class="pill" id="addIng">+ Add ingredient</button>
     <label class="field" style="margin-top:16px"><span>Notes or instructions</span><textarea class="inp ta" id="rNotes" rows="4" placeholder="Steps, oven temperature, where the recipe came from...">${esc(r.notes || '')}</textarea></label>
     <div class="preview"><span>Whole recipe <b class="num" id="rTot" style="font-size:16px">0</b> kcal</span><span>Per serving <b class="num" id="rPer">0</b></span></div>
+    ${editing ? syncBox(linkedEntries('recipe', r).length) : ''}
     <button class="btn" type="submit">${editing ? 'Save changes' : 'Save recipe'}</button>
     ${editing ? `<button class="btn danger" type="button" id="rDel" style="margin-top:6px">Delete recipe</button>` : ''}
   </form>
@@ -1037,8 +1112,11 @@ function recipeSheet(r) {
     const clean = ings.filter(i => String(i.name).trim() || +i.cal).map(i => ({name: String(i.name).trim(), amt: String(i.amt || '').trim(), cal: +i.cal || 0, p: +i.p || 0, c: +i.c || 0, f: +i.f || 0}));
     const item = {id: r.id || uid(), name: $('#rN').value.trim(), servings: +$('#rS').value || 1, ingredients: clean, notes: $('#rNotes').value.trim(), uses: r.uses || 0, created: r.created || Date.now()};
     if (!item.name) return;
+    const old = structuredClone(S), past = editing ? linkedEntries('recipe', r) : [];
     if (editing) S.recipes = S.recipes.map(x => x.id === r.id ? item : x); else S.recipes.push(item);
-    save(); closeSheet(); renderRecipes(); toast(editing ? 'Recipe updated' : 'Recipe saved');
+    const sync = $('#syncPast') && $('#syncPast').checked && past.length;
+    if (sync) applyPer(past, 'recipe', item.id, item.name, rTotals(item).per);
+    save(); closeSheet(); renderRecipes(); toast(sync ? `Recipe updated, plus ${past.length} past entr${past.length === 1 ? 'y' : 'ies'}` : editing ? 'Recipe updated' : 'Recipe saved', editing ? () => { S = old; save(); route() } : null);
   };
   if (editing) $('#rDel').onclick = () => { const idx = S.recipes.findIndex(x => x.id === r.id), [rm] = S.recipes.splice(idx, 1); save(); closeSheet(); renderRecipes(); toast(`Deleted ${rm.name}`, () => { S.recipes.splice(idx, 0, rm); save(); renderRecipes() }) };
 }

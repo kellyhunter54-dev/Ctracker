@@ -7,7 +7,8 @@ A personal calorie tracker. Plain HTML, CSS and JavaScript in a single `index.ht
 - **Today**: animated calorie ring (goal, eaten, burned, remaining), protein / carbs / fat bars, meals split into Breakfast, Lunch, Dinner and Snacks, exercise, water glasses and a daily weigh-in. Swipe left/right (or use the arrows) to move between days; tap the date to jump back to today.
 - **Quick logging**: suggestions from your saved foods and recent entries, servings multiplier, optional macros, "Save to My foods", edit or delete any entry with undo.
 - **Progress**: Week, Month, 3 Months and Year views with averages, days within goal, total deficit/surplus (and the weight it roughly equals), logging consistency, streak, a calories chart with goal line, a month calendar you can tap into, and a weight trend chart with your goal weight.
-- **My foods**: a library of saved items for one-tap logging.
+- **My foods**: a library of saved items for one-tap logging. Editing a saved food (or a recipe) can also update every past entry of it.
+- **Exercise calculator**: pick walking, running, cycling, weights, HIIT, swimming, hiking or yoga. Walking and running use speed, incline and time (ACSM equations, good for a walking pad or treadmill); the rest use intensity and time (MET values). Both use your latest logged weight. You can still type calories directly.
 - **Recipes**: save dishes you make with their ingredients (amount, calories, macros), servings and notes. Calories per serving are worked out for you, and you can log a serving (or 1.5, etc.) in one tap. Recipes also show up as suggestions when adding food.
 - **Goals**: calorie, macro and water targets, goal weight, and a Mifflin-St Jeor goal calculator.
 - **Settings**: Metric or Imperial units, light/dark/auto theme, backup export (download or copy), import (file or paste, merge or replace), CSV export of the whole log, demo data, erase.
