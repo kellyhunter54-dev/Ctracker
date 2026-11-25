@@ -278,6 +278,8 @@ details.more[open] summary::before{content:"− "}
 .cm-pop .pf{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)}
 
 /* add-food sources */
+.left-today{font-size:12px;font-weight:500;color:var(--mute);margin-left:4px}
+.left-today.over{color:var(--over)}
 .hint-amt{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 12px;margin:-2px 0 14px;border-radius:12px;background:var(--card2);animation:viewIn .3s var(--ease)}
 .hint-amt b{display:block;font-size:14px;font-weight:600}
 .hint-amt small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
@@ -974,7 +976,7 @@ function foodSheet(en) {
       <div class="grid3"><label class="field"><span>Protein g</span><input class="inp num" id="fP" type="number" inputmode="decimal" step="any" min="0" value="${per('p')}"></label><label class="field"><span>Carbs g</span><input class="inp num" id="fC" type="number" inputmode="decimal" step="any" min="0" value="${per('c')}"></label><label class="field"><span>Fat g</span><input class="inp num" id="fF" type="number" inputmode="decimal" step="any" min="0" value="${per('f')}"></label></div>
     </details>
     ${editing ? '' : `<label class="chk"><input type="checkbox" id="fSave"> Save to My foods</label>`}
-    <div class="preview"><span>Total</span><b class="num" id="fTot">0 kcal</b></div>
+    <div class="preview"><span>Total <small class="left-today" id="fLeft"></small></span><b class="num" id="fTot">0 kcal</b></div>
     <button class="btn" type="submit">${editing ? 'Save changes' : 'Add to log'}</button>
     ${editing ? `<button class="btn danger" type="button" id="fDel" style="margin-top:6px">Delete entry</button>` : ''}
   </form>`);
@@ -999,7 +1001,10 @@ function foodSheet(en) {
     $('#fUse').onclick = () => { $('#fSrv').value = sugAmt; upd() };
   };
   const mult = () => { const a = parseFloat($('#fSrv').value); return mode === 'g' ? (a > 0 ? a / 100 : 0) : (a > 0 ? a : 1) };
-  const upd = () => { const t = (parseFloat($('#fCal').value) || 0) * mult(); $('#fTot').textContent = fmt(t) + ' kcal' + (mode === 'g' && parseFloat($('#fSrv').value) > 0 ? ` · ${fmt(parseFloat($('#fSrv').value))} g` : ''); hint() };
+  const upd = () => { const t = (parseFloat($('#fCal').value) || 0) * mult(); $('#fTot').textContent = fmt(t) + ' kcal' + (mode === 'g' && parseFloat($('#fSrv').value) > 0 ? ` · ${fmt(parseFloat($('#fSrv').value))} g` : '');
+    const left = mealBudget(key(cur), meal, en.id).remaining - t, fl = $('#fLeft');
+    fl.textContent = `(${fmt(Math.abs(left))} ${left >= 0 ? 'left' : 'over'} ${cur - today() === 0 ? 'today' : 'for the day'})`; fl.classList.toggle('over', left < 0);
+    hint() };
   const setMode = (v, amount) => {
     mode = v; $$('#fMode button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
     $('#lCal').textContent = v === 'g' ? 'Calories per 100 g' : 'Calories per serving';
@@ -1574,12 +1579,12 @@ function logRecipeSheet(r) {
     <div class="seg" id="lMeal" style="margin-bottom:14px">${MEALS.map(([m,l]) => `<button type="button" data-m="${m}" class="${m === meal ? 'on' : ''}">${l}</button>`).join('')}</div>
     ${r.weight > 0 ? '<div class="seg mode-seg" id="lMode"><button type="button" data-v="srv" class="on">Servings</button><button type="button" data-v="g">Grams</button></div>' : ''}
     <form id="lForm"><label class="field"><span id="lSL">Servings eaten</span><input class="inp num" id="lS" type="number" inputmode="decimal" min="0.1" step="any" value="1" autofocus></label>
-    <div class="preview"><span>Adds to ${esc(dayLabel(cur).toLowerCase())}</span><b class="num" id="lTot"></b></div>
+    <div class="preview"><span>Total <small class="left-today" id="lLeft"></small></span><b class="num" id="lTot"></b></div>
     <button class="btn" type="submit">Add to log</button></form>`);
   $('#lMeal').onclick = e => { const b = e.target.closest('button'); if (!b) return; meal = b.dataset.m; $$('#lMeal button').forEach(x => x.classList.toggle('on', x === b)) };
   let lm = 'srv';
   const {t} = rTotals(r), lmult = () => lm === 'g' ? (+$('#lS').value || 0) / r.weight * (+r.servings || 1) : (+$('#lS').value || 0);
-  const upd = () => $('#lTot').textContent = fmt(per.cal * lmult()) + ' kcal';
+  const upd = () => { const kc = per.cal * lmult(), left = mealBudget(key(cur), meal).remaining - kc; $('#lTot').textContent = fmt(kc) + ' kcal'; $('#lLeft').textContent = `(${fmt(Math.abs(left))} ${left >= 0 ? 'left' : 'over'} ${cur - today() === 0 ? 'today' : 'for the day'})`; $('#lLeft').classList.toggle('over', left < 0) };
   if ($('#lMode')) $('#lMode').onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; lm = b.dataset.v; $$('#lMode button').forEach(x => x.classList.toggle('on', x === b)); $('#lSL').textContent = lm === 'g' ? 'Grams eaten' : 'Servings eaten'; $('#lS').value = lm === 'g' ? (r.lastG || '') : 1; $('#lS').focus(); upd() };
   $('#lS').addEventListener('input', upd); upd();
   $('#lForm').onsubmit = e => {
