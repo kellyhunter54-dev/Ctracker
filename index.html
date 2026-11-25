@@ -297,6 +297,39 @@ details.more[open] summary::before{content:"− "}
 .pick{max-height:min(52vh,440px);overflow:auto;margin:0 -4px;padding:0 4px}
 .pick li .kc::after{content:" kcal";font-size:11px;color:var(--mute);font-weight:500}
 
+/* ai analyst */
+.ai-card{padding:20px 22px}
+.ai-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:5px 10px 5px 8px;border-radius:99px;color:#fff;background:linear-gradient(120deg,#7c5cff,#e2558f 55%,var(--acc))}
+.ai-badge svg{width:14px;height:14px}
+.ai-verdict b{font:600 22px/1.2 "Inter Tight",sans-serif;letter-spacing:-.01em}
+.ai-verdict.great b,.ai-verdict.good b{color:var(--good)}.ai-verdict.warn b{color:var(--lv1)}.ai-verdict.bad b{color:var(--over)}
+.ai-text{margin:6px 0 12px;color:var(--ink);font-size:15px;line-height:1.55}
+.ai-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.ai-stats div{background:var(--card2);border-radius:12px;padding:8px 10px}
+.ai-stats span{display:block;font-size:11px;color:var(--mute)}
+.ai-stats b{font-size:16px;font-weight:600}
+.ai-good{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.ai-good span{font-size:12px;font-weight:500;color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent);padding:4px 10px;border-radius:99px}
+.ai-list{margin:0 0 12px;padding-left:18px;display:grid;gap:7px;font-size:14px;color:var(--ink)}
+.ai-list li::marker{color:var(--acc)}
+.ai-tip{background:var(--acc2);border-radius:12px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
+.ai-tip b{font-size:12px;color:var(--acc)}
+.ai-obs{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:12px;padding:12px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line)}
+.ai-obs b{display:block;font-size:14px}.ai-obs small{display:block;color:var(--mute);font-size:12px;margin-top:3px}
+.ai-obs .pill{flex:none;background:var(--acc);color:#fff}
+.ai-now{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:14px;display:grid;gap:3px}
+.ai-now span{color:var(--mute)}
+.ai-older{margin-top:12px;font-size:13px}
+.ai-older summary{cursor:pointer;color:var(--mute)}
+.ai-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.ai-dot{font-size:12px;font-weight:600}.ai-dot.great,.ai-dot.good{color:var(--good)}.ai-dot.warn{color:var(--lv1)}.ai-dot.bad{color:var(--over)}.ai-dot.info{color:var(--mute)}
+.ai-body{animation:viewIn .5s var(--ease)}
+.ai-notice{display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:14px;border-radius:16px;text-decoration:none;color:#fff;background:linear-gradient(120deg,#7c5cff,#e2558f 55%,var(--acc));box-shadow:var(--shadow);animation:earnIn2 .5s var(--spring)}
+.ai-notice svg{width:16px;height:16px;flex:none}.ai-notice span{flex:1;font-weight:500;font-size:14px}.ai-notice b{font-size:13px}
+@keyframes earnIn2{from{opacity:0;transform:translateY(6px)}}
+@media (max-width:520px){.ai-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* my stats */
 .me-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center}
 .me-day .big2{font-size:clamp(44px,10vw,64px);font-weight:600;line-height:1;color:var(--acc);margin:4px 0}
@@ -357,7 +390,7 @@ details.more[open] summary::before{content:"− "}
 #dayTitle{text-align:center;cursor:pointer}
 .cols{display:flex;flex-direction:column}
 .col-a,.col-b{display:contents}
-.hero-card{order:1}#meals{order:2}.ex-card{order:3}.mini{order:4;margin-bottom:14px}
+.hero-card{order:1}.ai-notice{order:1}#meals{order:2}.ex-card{order:3}.mini{order:4;margin-bottom:14px}
 kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:6px;background:var(--card2);border:1px solid var(--line);font:600 11px Inter,sans-serif;color:var(--mute);margin-right:2px}
 
 @media (min-width:700px) and (max-width:999px){
@@ -501,6 +534,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
     </div>
     </div>
     <div class="col-b">
+    <a class="ai-notice" id="aiNotice" href="#me" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.9 5.2 5.2 1.9-5.2 1.9L12 16.7l-1.9-5.2-5.2-1.9 5.2-1.9L12 2.5z"/></svg><span></span><b>View</b></a>
     <div id="meals"></div>
 
     <div class="card ex-card">
@@ -551,6 +585,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
         <div class="me-ends num"><span id="meStartW"></span><span id="meNowW"></span><span id="meGoalW"></span></div>
       </div>
     </div>
+    <div class="card ai-card" id="aiCard"></div>
     <div class="kpis me-kpis" id="meKpis"></div>
     <div class="duo me-duo">
       <div class="card"><h2>Body</h2><div id="meBody" style="margin-top:6px"></div></div>
@@ -925,6 +960,7 @@ function renderToday() {
   $('#wUnit').textContent = st.unit;
   $('#wIn').value = d.weight != null ? +toUnit(d.weight).toFixed(1) : '';
   $('#wIn').placeholder = lastWeight(k) != null ? (+toUnit(lastWeight(k)).toFixed(1)).toString() : '--';
+  aiNotice();
 }
 const lastWeight = k => { const ks = Object.keys(S.days).filter(x => x < k && S.days[x].weight != null).sort(); return ks.length ? S.days[ks.at(-1)].weight : null };
 
@@ -1330,6 +1366,172 @@ ro.observe($('#calFig')); ro.observe($('#wFig')); ro.observe($('#jFig'));
 const prof = () => S.settings.profile || {};
 const startKey = () => prof().start || '';
 const ageOf = dob => { if (!dob) return null; const b = parse(dob), t = today(); let a = t.getFullYear() - b.getFullYear(); if (t < new Date(t.getFullYear(), b.getMonth(), b.getDate())) a--; return a };
+/* ================= AI ANALYST =================
+   Rule-based weekly review. Weeks run from your start date; each review compares the
+   weight change between weigh-ins with the loss your logged deficits predict, then
+   explains the most likely reasons using what is in your logs. */
+const LOSS_FAST = .01; // more than 1% of body weight in a week
+function analyst() {
+  const st = S.settings, P = prof(), u = st.unit, perU = u === 'lb' ? 3500 : 7700, t = today(), tk = key(t);
+  const keys = Object.keys(S.days).sort();
+  const W = keys.filter(k => S.days[k].weight != null).map(k => ({k, w: S.days[k].weight}));
+  const firstAny = keys.find(k => logged(S.days[k]) || S.days[k].weight != null);
+  const sk = startKey() || firstAny;
+  if (!sk) return {state: 'empty'};
+  const maint = st.maintenance > 0 ? st.maintenance : 0;
+  const U = kg => toUnit(kg), f1 = v => (Math.round(v * 10) / 10).toFixed(1);
+  const weeks = [];
+  let prevEnd = null; // {k, w}
+  for (let n = 1; n < 260; n++) {
+    const ws = addDays(parse(sk), 7 * (n - 1)), we = addDays(ws, 6), wsk = key(ws), wek = key(we);
+    if (wsk > tk) break;
+    const complete = wek < tk || (wek === tk && S.days[tk] && S.days[tk].weight != null);
+    // start weight: week 1 uses your starting weight (or first weigh-in in the first 2 days); later weeks use last week's end
+    let sw = prevEnd;
+    if (n === 1) { const w0 = W.find(x => x.k >= wsk && x.k <= key(addDays(ws, 1))); sw = P.startWeight ? {k: wsk, w: P.startWeight} : w0 || W.filter(x => x.k <= wsk).at(-1) || null }
+    // end weight: day 7 weigh-in, or the latest one from day 4 to 7
+    const ew = W.find(x => x.k === wek) || W.filter(x => x.k >= key(addDays(ws, 3)) && x.k <= wek).at(-1) || null;
+    const wk = {n, ws, we, wsk, wek, complete, sw, ew, dayNo: Math.min(7, Math.round((t - ws) / 864e5) + 1)};
+    // eating days between the two weigh-ins (or the whole week if a weight is missing)
+    const from = sw ? parse(sw.k) : ws, to = ew ? parse(ew.k) : (complete ? addDays(we, 1) : t);
+    const days = []; for (let d = new Date(from); d < to; d = addDays(d, 1)) { const k = key(d), dd = S.days[k]; days.push({k, d: new Date(d), dd, log: logged(dd)}) }
+    if (!days.length) days.push({k: wsk, d: ws, dd: S.days[wsk], log: logged(S.days[wsk])});
+    wk.days = days;
+    const L = days.filter(x => x.log);
+    wk.logged = L.length; wk.span = days.length;
+    const food = x => sum(x.dd.entries, e => e.cal), exb = x => x.dd ? sum(x.dd.exercise, e => e.cal) : 0;
+    wk.avgFood = L.length ? sum(L, food) / L.length : 0;
+    wk.burn = sum(days, exb);
+    wk.avgProtein = L.length ? sum(L, x => sum(x.dd.entries, e => e.p || 0)) / L.length : 0;
+    if (maint) { const defs = L.map(x => dayDef(x.dd)), avgD = defs.length ? defs.reduce((a,b) => a + b, 0) / defs.length : 0; wk.expKcal = defs.reduce((a,b) => a + b, 0) + avgD * (days.length - L.length); wk.expected = wk.expKcal / perU }
+    if (sw && ew && ew.k > sw.k) wk.actual = U(sw.w) - U(ew.w);
+    // signals
+    wk.overDays = L.filter(x => level(net(x.dd)) >= 1); wk.overKcal = sum(wk.overDays, x => net(x.dd) - st.goal);
+    const wkend = L.filter(x => [0,5,6].includes(x.d.getDay())), wkday = L.filter(x => ![0,5,6].includes(x.d.getDay()));
+    wk.weekendGap = wkend.length && wkday.length ? sum(wkend, food) / wkend.length - sum(wkday, food) / wkday.length : 0;
+    const lastDay = days.at(-1); wk.lastSpike = lastDay && lastDay.log && wk.avgFood ? food(lastDay) - wk.avgFood : 0; wk.lastDayFood = lastDay && lastDay.log ? food(lastDay) : 0;
+    wk.ateBack = st.eatBack !== false ? sum(L.filter(x => exb(x) > 0), x => Math.max(0, Math.min(exb(x), food(x) - st.goal))) : 0;
+    wk.weighs = W.filter(x => x.k >= wsk && x.k <= wek);
+    wk.swing = wk.weighs.length >= 3 ? U(Math.max(...wk.weighs.map(x => x.w))) - U(Math.min(...wk.weighs.map(x => x.w))) : 0;
+    weeks.push(wk);
+    if (ew) prevEnd = ew;
+  }
+  // real maintenance from your own data (after week 1, to skip the water drop)
+  let obs = null;
+  const done = weeks.filter(w => w.complete && w.actual != null);
+  if (maint && done.length >= 3) { // needs 2+ full weeks after week 1, so one watery week can't fool it
+    const use = done.slice(1), days = use.flatMap(w => w.days), L = days.filter(x => x.log);
+    if (L.length >= days.length * .8 && L.length >= 12) {
+      const lossKcal = sum(use, w => w.actual) * perU, foodSum = sum(L, x => sum(x.dd.entries, e => e.cal)), exSum = sum(L, x => sum(x.dd.exercise, e => e.cal));
+      const scale = days.length / L.length, m = Math.round(((lossKcal + (foodSum - exSum) * scale) / days.length) / 10) * 10;
+      if (Math.abs(m - maint) >= 100 && m > 1000) obs = {value: m, diff: m - maint, days: days.length};
+    }
+  }
+  // maintenance drifting down as you lose weight (needs a full profile)
+  let drift = null;
+  const ages = P.dob ? ageOf(P.dob) : null, nowW = lastWeight('9999'), startW = P.startWeight || (W[0] && W[0].w);
+  if (maint && P.heightCm && ages && P.sex && nowW && startW && startW - nowW > 0) {
+    const bmr = w => 10 * w + 6.25 * P.heightCm - 5 * ages + (P.sex === 'm' ? 5 : -161);
+    const m2 = Math.round(maint * bmr(nowW) / bmr(startW) / 10) * 10;
+    if (maint - m2 >= 50) drift = {value: m2, lost: U(startW) - U(nowW)};
+  }
+  return {state: 'ok', weeks, obs, drift, maint, u, perU, f1, sk};
+}
+
+function reviewWeek(wk, A, prev) {
+  const st = S.settings, P = prof(), u = A.u, f1 = A.f1, perU = A.perU;
+  const out = {why: [], tips: [], good: []};
+  if (!A.maint) { out.tone = 'info'; out.title = 'I need your maintenance'; out.text = 'Add your maintenance calories on the Goals page (the calculator fills it in) so I can work out what you should be losing.'; return out }
+  if (!wk.sw || !wk.ew || wk.actual == null) { out.tone = 'info'; out.title = 'Missing a weigh-in'; out.text = `I need a weight at the start and end of the week to compare. ${!wk.sw ? 'Add a starting weight (Settings > Your profile) or weigh in on day 1.' : 'Weigh in on day 7 next time, ideally first thing in the morning.'}`; return out }
+  const E = wk.expected, Aw = wk.actual, ratio = E > .05 ? Aw / E : (Aw > 0 ? 9 : 0), week1 = wk.n === 1;
+  const lbl = v => `${f1(Math.abs(v))} ${u}`;
+  // what went well
+  if (wk.logged === wk.span) out.good.push('You logged every day');
+  else if (wk.logged >= wk.span - 1) out.good.push(`You logged ${wk.logged} of ${wk.span} days`);
+  if (!wk.overDays.length && wk.logged) out.good.push('Every logged day stayed on target');
+  if (wk.burn >= 500) out.good.push(`${fmt(wk.burn)} kcal of exercise`);
+  // shared causes
+  const missing = wk.span - wk.logged;
+  const slowCauses = () => {
+    if (wk.overDays.length) out.why.push(`${wk.overDays.length} day${wk.overDays.length > 1 ? 's' : ''} went over your goal, adding about ${fmt(wk.overKcal)} kcal (${lbl(wk.overKcal / perU)}).`);
+    if (wk.weekendGap > 300) out.why.push(`Weekends ran about ${fmt(wk.weekendGap)} kcal a day higher than weekdays.`);
+    if (missing > 0) out.why.push(`${missing} day${missing > 1 ? 's were' : ' was'} not logged. Unlogged days are usually the bigger ones, so the real deficit was probably smaller than I counted.`);
+    if (wk.lastSpike > Math.max(300, wk.avgFood * .25)) out.why.push(`The day before your weigh-in was ${fmt(wk.lastDayFood)} kcal, well above your ${fmt(wk.avgFood)} average. Extra food, salt and carbs hold water for 1 to 3 days and can hide fat loss.`);
+    if (wk.ateBack > 300) out.why.push(`You ate back about ${fmt(wk.ateBack)} kcal of exercise. Burn numbers are estimates, so eating all of it back can quietly shrink your deficit.`);
+    if (prev && prev.burn >= 0 && wk.burn > Math.max(400, prev.burn * 1.5)) out.why.push(`Your exercise jumped to ${fmt(wk.burn)} kcal (from ${fmt(prev.burn)}). New or harder workouts make muscles hold extra water for a few days.`);
+    if (P.sex === 'f') out.why.push('Hormonal water retention around your period can hide a full week of progress, then drop off suddenly.');
+    if (A.drift) out.why.push(`You are ${lbl(A.drift.lost)} lighter than when your maintenance was set, so it is now closer to ${fmt(A.drift.value)} kcal than ${fmt(A.maint)}.`);
+    if (wk.swing >= (u === 'lb' ? 2 : 1)) out.why.push(`Your weigh-ins swung ${lbl(wk.swing)} within the week, which is water noise. Weigh in at the same time each morning, after the bathroom, before eating.`);
+    out.why.push('Scale weight can swing 1 to 2 kg (2 to 4 lb) from water alone. One slow week is noise; two slow weeks in a row is a real signal.');
+    if (wk.overDays.length || wk.weekendGap > 300) out.tips.push('Use the portion suggestion when adding food so dinner and weekends fit the day.');
+    if (missing > 0) out.tips.push('Log every day, even rough guesses. A rough log beats a missing one.');
+    if (wk.ateBack > 300) out.tips.push('Try Settings > Exercise > Keep my calories fixed, or eat back about half.');
+    if (A.drift) out.tips.push(`Recalculate on the Goals page to update your maintenance to about ${fmt(A.drift.value)} kcal.`);
+    if (!out.tips.length) out.tips.push('Change nothing yet. Keep logging and see what next week says.');
+  };
+  if (Aw <= -.2) {
+    out.tone = 'bad'; out.title = `Up ${lbl(Aw)} this week`; out.text = `Your logs predicted a loss of ${lbl(E)}, but the scale went up. That is almost always water, food in your system, or days that were bigger than logged. Here is what I found:`;
+    slowCauses();
+  } else if (week1 && ratio >= 1.15) {
+    out.tone = 'great'; out.title = 'Great first week'; out.text = `You lost ${lbl(Aw)} against an expected ${lbl(E)}. A bigger first week is normal: eating less means less food in your system, and lower carbs and salt release stored water. Expect week 2 to land closer to ${lbl(E)}, so don't worry if it looks smaller.`;
+  } else if (ratio >= 1.3) {
+    out.tone = 'great'; out.title = 'Ahead of plan'; out.text = `You lost ${lbl(Aw)}, more than the ${lbl(E)} your logs predicted. Possible reasons:`;
+    if (A.obs && A.obs.diff > 0) out.why.push(`Your body may burn more than your ${fmt(A.maint)} kcal estimate. Based on your logs it looks closer to ${fmt(A.obs.value)} kcal.`);
+    if (prev && prev.actual != null && prev.expected && prev.actual < prev.expected * .7) out.why.push('Last week was slow, so some of this is likely water from last week finally dropping off. Look at the two weeks together.');
+    if (missing > 0) out.why.push(`${missing} day${missing > 1 ? 's were' : ' was'} not logged. If those were light days, the real deficit was bigger than I counted.`);
+    out.why.push('Extra daily movement (walking, chores, a busy day) burns more than any estimate, and water can also swing in your favour.');
+    if (wk.ew && Aw / toUnit(wk.ew.w) > LOSS_FAST && !week1) { out.why.push(`That is over 1% of your body weight in a week.${wk.avgProtein && st.protein && wk.avgProtein < st.protein * .85 ? ` Keeping protein near ${fmt(st.protein)} g helps protect muscle; you averaged ${fmt(wk.avgProtein)} g.` : ''}`) }
+    out.tips.push('Keep doing exactly this. If it repeats for another week, update your maintenance to match your real burn.');
+  } else if (ratio >= .75) {
+    out.tone = 'good'; out.title = 'Right on track'; out.text = `You lost ${lbl(Aw)} and your logs predicted ${lbl(E)}. Your numbers are matching reality, which means your maintenance estimate and logging are working.`;
+    out.tips.push('Same again next week.');
+  } else if (ratio >= .3) {
+    out.tone = 'warn'; out.title = 'Slower than expected'; out.text = `You lost ${lbl(Aw)}, less than the ${lbl(E)} your logs predicted. What likely happened:`;
+    slowCauses();
+  } else {
+    out.tone = 'warn'; out.title = 'The scale barely moved'; out.text = `${Aw > 0 ? `Down ${lbl(Aw)}` : 'No change'} against an expected ${lbl(E)}. This is usually water hiding progress rather than no progress. What I found:`;
+    slowCauses();
+  }
+  return out;
+}
+
+function renderAnalyst() {
+  const box = $('#aiCard'); if (!box) return;
+  const A = analyst(), icon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.9 5.2 5.2 1.9-5.2 1.9L12 16.7l-1.9-5.2-5.2-1.9 5.2-1.9L12 2.5zM19 14l.9 2.3 2.3.9-2.3.9L19 20.4l-.9-2.3-2.3-.9 2.3-.9L19 14zM5.5 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7.7-1.8z"/></svg>';
+  const head = sub => `<div class="ai-head"><span class="ai-badge">${icon}AI analyst</span><span class="muted">${sub}</span></div>`;
+  if (A.state === 'empty') { box.innerHTML = head('') + '<p class="ai-text">Set a start date in Settings and log a week. I will review it on day 7 and tell you how it went.</p>'; return }
+  const fmtD = d => d.toLocaleDateString(undefined, {month:'short', day:'numeric'}), u = A.u, f1 = A.f1;
+  const doneW = A.weeks.filter(w => w.complete), cur0 = A.weeks.find(w => !w.complete);
+  const last = doneW.at(-1);
+  let h = head(last ? `Week ${last.n} · ${fmtD(last.ws)} to ${fmtD(last.we)}` : 'Week 1 in progress');
+  const block = (wk, prev, open) => {
+    const R = reviewWeek(wk, A, prev);
+    const stats = A.maint && wk.actual != null ? `<div class="ai-stats"><div><span>Expected</span><b class="num">−${f1(Math.max(0, wk.expected))} ${u}</b></div><div><span>Actual</span><b class="num">${wk.actual >= 0 ? '−' : '+'}${f1(Math.abs(wk.actual))} ${u}</b></div><div><span>Days logged</span><b class="num">${wk.logged}/${wk.span}</b></div><div><span>Avg eaten</span><b class="num">${fmt(wk.avgFood)}</b></div></div>` : '';
+    return `<div class="ai-verdict ${R.tone}"><b>${esc(R.title)}</b></div><p class="ai-text">${esc(R.text)}</p>${stats}
+      ${R.good.length ? `<div class="ai-good">${R.good.map(g => `<span>✓ ${esc(g)}</span>`).join('')}</div>` : ''}
+      ${R.why.length ? `<ul class="ai-list">${R.why.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${R.tips.length ? `<div class="ai-tip"><b>Try this</b>${R.tips.map(x => `<div>${esc(x)}</div>`).join('')}</div>` : ''}`;
+  };
+  if (last) h += `<div class="ai-body">${block(last, doneW.at(-2), true)}</div>`;
+  if (A.obs) h += `<div class="ai-obs"><div><b>Your real maintenance looks like ${fmt(A.obs.value)} kcal</b><small>Worked out from ${A.obs.days} days of your logs and weigh-ins, against the ${fmt(A.maint)} estimate. Updating it moves your goal by ${A.obs.diff > 0 ? '+' : ''}${fmt(A.obs.diff)} to keep the same deficit.</small></div><button class="pill" id="aiApply">Update</button></div>`;
+  if (cur0) {
+    const L = cur0.days.filter(x => x.log), soFar = A.maint ? sum(L, x => dayDef(x.dd)) : null, wd = cur0.we.toLocaleDateString(undefined, {weekday:'long', month:'short', day:'numeric'});
+    h += `<div class="ai-now"><b>Week ${cur0.n} · day ${cur0.dayNo} of 7</b><span>${soFar != null && L.length ? (soFar > 0 ? `So far your logs point to about −${f1(soFar / A.perU)} ${u} (${fmt(soFar)} kcal deficit over ${L.length} day${L.length > 1 ? 's' : ''}). ` : `So far you are ${fmt(-soFar)} kcal over maintenance this week. `) : ''}Weigh in on ${esc(wd)} for your review.</span></div>`;
+  }
+  if (doneW.length > 1) h += `<details class="ai-older"><summary>Earlier weeks</summary>${doneW.slice(0, -1).reverse().map((w, i, arr) => { const R = reviewWeek(w, A, doneW[doneW.indexOf(w) - 1]); return `<div class="ai-row"><span>Week ${w.n} · ${fmtD(w.ws)}</span><span class="num">${w.actual != null ? `${w.actual >= 0 ? '−' : '+'}${f1(Math.abs(w.actual))} ${u}` : '--'}${w.expected != null ? ` <span class="muted">/ −${f1(Math.max(0, w.expected))}</span>` : ''}</span><span class="ai-dot ${R.tone}">${esc(R.title)}</span></div>` }).join('')}</details>`;
+  box.innerHTML = h;
+  const ap = $('#aiApply'); if (ap) ap.onclick = () => { const d = A.obs.diff; S.settings.maintenance = A.obs.value; S.settings.goal = Math.round((S.settings.goal + d) / 10) * 10; save(); toast(`Maintenance ${fmt(A.obs.value)}, goal ${fmt(S.settings.goal)}`); renderMe() };
+  if (last) { try { S.settings.aiSeen = last.n; save() } catch(e) {} }
+}
+// small notice on the Diary when a new weekly review is ready
+function aiNotice() {
+  const el = $('#aiNotice'); if (!el) return;
+  let A; try { A = analyst() } catch(e) { el.hidden = true; return }
+  const last = A.state === 'ok' ? A.weeks.filter(w => w.complete).at(-1) : null;
+  el.hidden = !(last && (S.settings.aiSeen || 0) < last.n);
+  if (!el.hidden) el.querySelector('span').textContent = `Your week ${last.n} review is ready`;
+}
+
 function renderMe() {
   const t = today(), tk = key(t), st = S.settings, P = prof(), u = st.unit;
   const firstLog = Object.keys(S.days).filter(k => logged(S.days[k])).sort()[0];
@@ -1372,6 +1574,7 @@ function renderMe() {
   const hTxt = h ? (u === 'lb' ? `${Math.floor(h / 2.54 / 12)} ft ${Math.round(h / 2.54 % 12)} in` : `${Math.round(h)} cm`) : '--';
   const rows = [['Current weight', U(nowW)], ['Height', hTxt], ['Age', age != null ? String(age) : '--'], ['BMI', bmi ? `${bmi.toFixed(1)}` : '--', bmi ? 'healthy range 18.5 to 24.9' : ''], ['Resting burn', bmr ? `${fmt(bmr)} kcal / day` : '--', bmr ? 'calories your body uses at rest' : '']];
   $('#meBody').innerHTML = rows.map(([l,v,n]) => `<div class="setrow"><div><div>${l}</div>${n ? `<div class="muted">${n}</div>` : ''}</div><b class="num" style="font-weight:600">${esc(v)}</b></div>`).join('') + (!h || !age || !P.sex ? `<p class="muted" style="margin:10px 0 0">Add your birthday, height and sex in <a href="#preferences" style="color:var(--acc)">Settings</a> to fill these in.</p>` : '');
+  renderAnalyst();
   // weight chart since start
   const W = wk.map(k => ({d: parse(k), w: toUnit(S.days[k].weight)}));
   jline.data = W; jline.range = [s0, t]; jline.draw();
