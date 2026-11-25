@@ -247,7 +247,9 @@ details.more[open] summary::before{content:"− "}
 @keyframes cmIn{from{opacity:0;transform:scale(.9)}}
 .cm-d:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .cm-d .n{font:600 13px/1 "Inter Tight",sans-serif}
-.cm-d .k{font:500 11px/1 "Inter Tight",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;opacity:.9}
+.cm-d .k,.cm-d .ks{position:absolute;left:4px;right:4px;top:50%;transform:translateY(-30%);text-align:center;font:600 13px/1 "Inter Tight",sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.cm-d .ks{display:none}
+.cm-note{flex-basis:100%;font-size:12px;color:var(--faint)}
 .cm-d .dot{position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%}
 .cm-d.lv{color:var(--c);background:color-mix(in srgb,var(--c) 15%,var(--card))}
 .cm-d.lv .dot{background:var(--c)}
@@ -260,7 +262,7 @@ details.more[open] summary::before{content:"− "}
 .cm-legend b{color:var(--ink);font-family:"Inter Tight",sans-serif}
 .bandlbl{display:inline-flex;align-items:center;gap:8px}
 .bandlbl i{width:10px;height:10px;border-radius:3px;display:inline-block}
-@media (max-width:420px){.cm-d .k{display:none}.cm-d{padding:6px}.cm-d .dot{width:6px;height:6px;right:auto;left:6px;top:auto;bottom:6px}}
+@media (max-width:520px){.cm-d .k{display:none}.cm-d .ks{display:block;font-size:11px}.cm-d{padding:6px}.cm-d .dot{display:none}}
 
 .cm-pop{position:fixed;z-index:40;width:270px;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:0 14px 44px rgb(0 0 0/.18),0 0 0 1px var(--line);pointer-events:none;opacity:0;transform:translateY(6px) scale(.97);transition:opacity .18s,transform .22s var(--ease)}
 .cm-pop.on{opacity:1;transform:none}
@@ -433,7 +435,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
   .cm-grid{gap:10px}
   .cm-d{aspect-ratio:auto;min-height:96px;padding:12px 12px 10px;border-radius:14px}
   .cm-d .n{font-size:15px}
-  .cm-d .k{font-size:13px}
+  .cm-d .k{font-size:17px}
   .cm-h{font-size:12px}
   .gcol>.card:last-child{margin-bottom:0}
   .rgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
@@ -592,6 +594,7 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
       <h2>Daily targets</h2>
       <div style="margin-top:8px">
         <div class="setrow"><span>Calories</span><input class="inp num" type="number" inputmode="numeric" data-set="goal"></div>
+        <div class="setrow"><div><div>Maintenance</div><div class="muted">What you burn on a normal day. Filled in by the calculator.</div></div><input class="inp num" type="number" inputmode="numeric" data-set="maintenance" placeholder="optional"></div>
         <div class="setrow"><span>Protein (g)</span><input class="inp num" type="number" inputmode="numeric" data-set="protein"></div>
         <div class="setrow"><span>Carbs (g)</span><input class="inp num" type="number" inputmode="numeric" data-set="carbs"></div>
         <div class="setrow"><span>Fat (g)</span><input class="inp num" type="number" inputmode="numeric" data-set="fat"></div>
@@ -672,6 +675,12 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
         <div class="setrow"><span class="bandlbl"><i style="background:var(--lv1)"></i>A bit over, up to +</span><input class="inp num" type="number" inputmode="numeric" min="0" data-band="1"></div>
         <div class="setrow"><span class="bandlbl"><i style="background:var(--lv2)"></i>Over, up to +</span><input class="inp num" type="number" inputmode="numeric" min="0" data-band="2"></div>
         <div class="setrow"><span class="bandlbl"><i style="background:var(--lv3)"></i>Way over</span><span class="muted" id="bandTop"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Exercise</h2>
+      <div style="margin-top:8px">
+        <div class="setrow stack"><div><div>When you burn calories</div><div class="muted" id="eatHint"></div></div><div class="seg" id="eatSeg"><button data-v="on">Add them to my calories</button><button data-v="off">Keep my calories fixed</button></div></div>
       </div>
     </div>
     <div class="card">
@@ -764,7 +773,12 @@ const cupVol = ml => imp() ? `${+(ml / OZ).toFixed(1)} oz` : `${fmt(ml)} ml`;
 const cupName = () => { const c = CUPS.find(x => x[0] === S.settings.cupKind); return c && c[0] !== 'custom' ? c[1] : 'Container' };
 const toUnit = kg => S.settings.unit === 'lb' ? kg * LB : kg;
 const fromUnit = v => S.settings.unit === 'lb' ? v / LB : v;
-const net = d => sum(d.entries, e => e.cal) - sum(d.exercise, e => e.cal);
+// exercise only raises your calories when "Add burn" is on (Settings > Exercise)
+const exCredit = d => S.settings.eatBack === false ? 0 : sum(d.exercise, e => e.cal);
+const net = d => sum(d.entries, e => e.cal) - exCredit(d);
+// real energy deficit: maintenance - eaten + exercise (exercise always counts here); falls back to goal - net
+const dayDef = d => S.settings.maintenance > 0 ? S.settings.maintenance - sum(d.entries, e => e.cal) + sum(d.exercise, e => e.cal) : S.settings.goal - net(d);
+const kShort = v => Math.abs(v) >= 1000 ? (Math.abs(v) / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : fmt(Math.abs(v));
 const logged = d => d && d.entries && d.entries.length > 0;
 const LV = ['On target', 'A bit over', 'Over', 'Way over'];
 const level = n => { const o = n - S.settings.goal, b = S.settings.bands || [100, 600, 1000]; return o <= b[0] ? 0 : o <= b[1] ? 1 : o <= b[2] ? 2 : 3 };
@@ -782,7 +796,7 @@ const mealBudget = (dayKey, meal, skipId) => {
   const d = getDay(dayKey), st = S.settings, order = MEALS.map(x => x[0]);
   const split = {...DEF.settings.split, ...(st.split || {})};
   const others = d.entries.filter(x => x.id !== skipId);
-  const remaining = st.goal + sum(d.exercise, x => x.cal) - sum(others, x => x.cal);
+  const remaining = st.goal + exCredit(d) - sum(others, x => x.cal);
   const inMeal = sum(others.filter(x => x.meal === meal), x => x.cal);
   const later = order.slice(order.indexOf(meal) + 1).filter(m => (split[m] || 0) > 0 && !others.some(x => x.meal === m));
   const share = Math.max(5, split[meal] || 0), laterShare = sum(later, m => split[m]);
@@ -864,7 +878,7 @@ function renderToday() {
   $('#datePick').value = key(cur);
   $('#goToday').style.visibility = key(cur) === key(today()) ? 'hidden' : 'visible';
   $('#daySub').textContent = cur.toLocaleDateString(undefined, {month:'long', day:'numeric', year: cur.getFullYear() !== today().getFullYear() ? 'numeric' : undefined});
-  const food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), n = food - ex, rem = st.goal - n;
+  const food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), cr = exCredit(d), n = food - cr, rem = st.goal - n;
   const over = rem < 0, p = Math.max(0, Math.min(1, n / st.goal));
   $('#ring').classList.toggle('is-over', over);
   requestAnimationFrame(() => {
@@ -874,8 +888,8 @@ function renderToday() {
     if (over) { arc($('#ringProg'), 0, 1); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'grow') { // ring size = goal + burn; the earned room shows as a soft green zone at the end
       // orange = eaten up to your goal; solid green = exercise calories you've eaten into; soft green = earned room still left
-      const cap = st.goal + Math.max(0, ex), fo = Math.min(1, food / cap), g = st.goal / cap;
-      arc($('#ringProg'), 0, Math.min(fo, g)); arc($('#ringEat'), g, Math.max(g, fo)); arc($('#ringBurn'), Math.max(g, fo), ex > 0 ? 1 : 0);
+      const cap = st.goal + Math.max(0, cr), fo = Math.min(1, food / cap), g = st.goal / cap;
+      arc($('#ringProg'), 0, Math.min(fo, g)); arc($('#ringEat'), g, Math.max(g, fo)); arc($('#ringBurn'), Math.max(g, fo), cr > 0 ? 1 : 0);
     }
     else if (st.ring === 'net') { arc($('#ringProg'), 0, fN); arc($('#ringBurn'), 0, 0) }
     else if (st.ring === 'end') { arc($('#ringProg'), 0, fF); arc($('#ringBurn'), fN, fF) }
@@ -1197,7 +1211,7 @@ function renderStats() {
   const sk0 = startKey(), L = days.filter(x => x.log && (!sk0 || x.k >= sk0)), past = days.filter(x => !x.fut && (!sk0 || x.k >= sk0));
   const avg = L.length ? sum(L, x => x.net) / L.length : 0;
   const onT = L.filter(x => level(x.net) === 0).length;
-  const bal = sum(L, x => goal - x.net);
+  const bal = sum(L, x => dayDef(S.days[x.k]));
   const perU = S.settings.unit === 'lb' ? 3500 : 7700;
   // previous period avg for delta
   const span = Math.round((R.e - R.s) / 864e5) + 1; let pL = [];
@@ -1337,7 +1351,7 @@ function renderMe() {
   const days = []; for (let d = new Date(s0); d <= t; d = addDays(d, 1)) { const dd = S.days[key(d)]; days.push({d: new Date(d), dd, log: logged(dd)}) }
   const L = days.filter(x => x.log), nets = L.map(x => net(x.dd));
   const avg = nets.length ? nets.reduce((a,b) => a + b, 0) / nets.length : 0;
-  const onT = nets.filter(n => level(n) === 0).length, bal = nets.reduce((a,n) => a + (st.goal - n), 0), perU = u === 'lb' ? 3500 : 7700;
+  const onT = nets.filter(n => level(n) === 0).length, bal = sum(L, x => dayDef(x.dd)), perU = u === 'lb' ? 3500 : 7700;
   const burned = sum(days, x => x.dd ? sum(x.dd.exercise, e => e.cal) : 0);
   let streak = 0, best = 0, run = 0; days.forEach(x => { run = x.log ? run + 1 : 0; best = Math.max(best, run) });
   for (let d = logged(S.days[tk]) ? t : addDays(t, -1); logged(S.days[key(d)]); d = addDays(d, -1)) streak++;
@@ -1391,28 +1405,30 @@ function renderCal() {
   $('#cmTitle').firstChild.textContent = m0.toLocaleDateString(undefined, {month:'long', year:'numeric'});
   $('#cmToday').hidden = !cmOff;
   $('#cmNext').style.visibility = cmOff < 0 ? 'visible' : 'hidden';
-  const lead = (m0.getDay() + 6) % 7, counts = [0,0,0,0]; let logged0 = 0, past = 0;
+  const lead = (m0.getDay() + 6) % 7, counts = [0,0,0,0]; let logged0 = 0, past = 0, defSum = 0;
   const cells = [];
   for (let i = 1; i <= m1.getDate(); i++) {
     const d = new Date(m0.getFullYear(), m0.getMonth(), i), k = key(d), dd = S.days[k], fut = d > t;
     const pre = startKey() && k < startKey();
     if (!fut && !pre) past++;
-    let cls = 'cm-d', st = `animation-delay:${Math.min((lead + i) * 12, 420)}ms`, kc = '', tip = d.toDateString();
-    if (logged(dd) && !pre) { const n = net(dd), lv = level(n); counts[lv]++; logged0++; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = fmt(n); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
+    let cls = 'cm-d', st = `animation-delay:${Math.min((lead + i) * 12, 420)}ms`, kc = '', ks = '', tip = d.toDateString();
+    if (logged(dd) && !pre) { const n = net(dd), lv = level(n), df = dayDef(dd); counts[lv]++; logged0++; defSum += df; cls += ' lv'; st += `;--c:var(--lv${lv})`; kc = (df >= 0 ? '−' : '+') + fmt(Math.abs(df)); ks = (df >= 0 ? '−' : '+') + kShort(df); tip += ` · ${fmt(n)} kcal · ${LV[lv]}` }
     if (k === key(t)) cls += ' today'; if (fut) cls += ' fut'; if (pre) cls += ' pre'; if (k === startKey()) cls += ' start';
-    cells.push(`<button class="${cls}" style="${st}" data-k="${k}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span></button>`);
+    cells.push(`<button class="${cls}" style="${st}" data-k="${k}" aria-label="${esc(tip)}"><span class="n">${i}</span><i class="dot"></i><span class="k num">${kc}</span><span class="ks num">${ks}</span></button>`);
   }
   $('#cmGrid').innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x => `<div class="cm-h">${x}</div>`).join('') + '<div class="cm-d out"></div>'.repeat(lead) + cells.join('');
-  $('#cmSub').textContent = past ? `${logged0} of ${past} days logged · ${counts[0]} on target` : 'Nothing to show yet';
+  const perU = S.settings.unit === 'lb' ? 3500 : 7700;
+  $('#cmSub').textContent = past ? `${logged0} of ${past} days logged · ${counts[0]} on target${logged0 ? ` · ${fmt(Math.abs(defSum))} kcal ${defSum >= 0 ? 'deficit' : 'surplus'} (about ${(Math.abs(defSum) / perU).toFixed(1)} ${S.settings.unit})` : ''}` : 'Nothing to show yet';
   const b = S.settings.bands, g = S.settings.goal;
   const rng = [`up to ${fmt(g + b[0])}`, `${fmt(g + b[0] + 1)} to ${fmt(g + b[1])}`, `${fmt(g + b[1] + 1)} to ${fmt(g + b[2])}`, `over ${fmt(g + b[2])}`];
-  $('#cmLegend').innerHTML = LV.map((l,i) => `<span><i style="background:var(--lv${i})"></i>${l} <b>${counts[i]}</b><span class="muted" style="font-size:12px">${rng[i]} kcal</span></span>`).join('');
+  $('#cmLegend').innerHTML = LV.map((l,i) => `<span><i style="background:var(--lv${i})"></i>${l} <b>${counts[i]}</b><span class="muted" style="font-size:12px">${rng[i]} kcal</span></span>`).join('')
+    + `<span class="cm-note">${S.settings.maintenance > 0 ? `Numbers are each day's deficit against your ${fmt(S.settings.maintenance)} kcal maintenance, exercise included.` : 'Numbers are each day\'s room left against your goal. Add your maintenance on the Goals page to see true deficits.'}</span>`;
 }
 $('#cmGrid').onclick = e => { const b = e.target.closest('[data-k]'); if (b) { cur = parse(b.dataset.k); location.hash = 'diary' } };
 $('#cmPrev').onclick = () => { cmOff--; renderCal() };
 const CK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
 function dayChecklist(k) {
-  const d = getDay(k), st = S.settings, food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), n = food - ex, has = logged(d);
+  const d = getDay(k), st = S.settings, food = sum(d.entries, e => e.cal), ex = sum(d.exercise, e => e.cal), n = food - exCredit(d), has = logged(d);
   const pro = sum(d.entries, e => e.p), meals = ['breakfast','lunch','dinner'].filter(m => d.entries.some(e => e.meal === m)).length;
   const over = n - st.goal;
   const rows = [
@@ -1426,7 +1442,7 @@ function dayChecklist(k) {
   const done = rows.filter(r => r[1]).length, lv = has ? level(n) : null;
   return `<div class="ph"><b>${parse(k).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'})}</b>${lv != null ? `<span class="tag" style="--c:var(--lv${lv})">${LV[lv]}${over > 0 ? ` · +${fmt(over)}` : ''}</span>` : ''}</div>
     <ul>${rows.map(([l, ok, v]) => `<li class="${ok ? '' : 'no'}"><span class="ck ${ok ? 'y' : 'n'}">${ok ? CK : ''}</span><span>${l}</span><span class="v">${esc(v)}</span></li>`).join('')}</ul>
-    <div class="pf">${done} of ${rows.length} done · click to open</div>`;
+    <div class="pf">${has ? (() => { const df = dayDef(d); return `${df >= 0 ? 'Deficit' : 'Surplus'} ${fmt(Math.abs(df))} kcal · ` })() : ''}${done} of ${rows.length} done · click to open</div>`;
 }
 let popT;
 $('#cmGrid').addEventListener('pointerover', e => {
@@ -1634,7 +1650,7 @@ $('#calcBtn').onclick = () => {
   const pr = Math.round(w * 1.8), fat = Math.round(final * .28 / 9), carbs = Math.max(0, Math.round((final - pr * 4 - fat * 9) / 4));
   const o = $('#calcOut'); o.classList.add('on');
   o.innerHTML = `<div class="row" style="justify-content:space-between"><span class="muted">Maintenance</span><b class="num">${fmt(tdee)} kcal</b></div><div class="row" style="justify-content:space-between;margin:6px 0 4px"><span class="muted">Suggested target</span><b class="num" style="font-size:22px;color:var(--acc)">${fmt(final)} kcal</b></div><p class="muted" style="margin:0 0 ${low ? 4 : 12}px">Protein ${pr}g · Carbs ${carbs}g · Fat ${fat}g ${Math.abs(tdee - final) >= 10 ? ` · ${fmt(Math.abs(tdee - final))} kcal daily ${tdee > final ? 'deficit' : 'surplus'}` : ''}</p>${low ? `<p style="margin:0 0 12px;font-size:13px;color:var(--over)">Below the usual ${fmt(floor)} kcal minimum. Hard to sustain, so keep an eye on energy and protein.</p>` : ''}<button class="btn" id="useCalc">Use these targets</button>`;
-  $('#useCalc').onclick = () => { Object.assign(S.settings, {goal: final, protein: pr, carbs, fat}); save(); renderGoals(); o.classList.remove('on'); toast('Targets updated') };
+  $('#useCalc').onclick = () => { Object.assign(S.settings, {goal: final, protein: pr, carbs, fat, maintenance: Math.round(tdee)}); save(); renderGoals(); o.classList.remove('on'); toast('Targets updated') };
 };
 
 /* ================= SETTINGS ================= */
@@ -1642,6 +1658,7 @@ function renderPrefs() {
   const st = S.settings;
   $$('#unitSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.unit));
   $$('#themeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === st.theme));
+  { const on = st.eatBack !== false; $$('#eatSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === (on ? 'on' : 'off'))); $('#eatHint').textContent = on ? `Exercise raises what you can eat (goal ${fmt(st.goal)} + burn). Burned still shows on the Diary.` : `You can always eat ${fmt(st.goal)}, however much you burn. Burned still shows on the Diary, and your calendar deficits still count it.` }
   $$('#ringSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === (st.ring || 'grow')));
   renderProfile(); renderInstall();
   $('#cupKind').innerHTML = CUPS.map(([v,l,ml]) => `<option value="${v}">${l}${ml && !l.startsWith('Stanley') ? ` · ${cupVol(ml)}` : ''}</option>`).join('');
@@ -1667,6 +1684,7 @@ $$('[data-band]').forEach(i => i.addEventListener('change', () => {
 $('#cupKind').onchange = e => { const c = CUPS.find(x => x[0] === e.target.value); S.settings.cupKind = c[0]; if (c[2]) S.settings.cup = c[2]; save(); renderPrefs(); toast('Saved') };
 $('#cupSize').onchange = e => { const v = +e.target.value; if (v > 0) { S.settings.cup = Math.round(imp() ? v * OZ : v); save(); renderPrefs(); toast('Saved') } };
 $('#ringSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.ring = b.dataset.v; save(); renderPrefs() };
+$('#eatSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.eatBack = b.dataset.v === 'on'; save(); renderPrefs(); toast('Saved') };
 $('#themeSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.settings.theme = b.dataset.v; save(); applyTheme(); renderPrefs() };
 
 let dlApi = null;

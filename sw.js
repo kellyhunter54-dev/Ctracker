@@ -1,6 +1,6 @@
 // Ctracker service worker: makes the app installable and usable offline.
 // Bump VERSION whenever app files change so installed copies pick up the update.
-const VERSION = 'ctracker-v28';
+const VERSION = 'ctracker-v29';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
