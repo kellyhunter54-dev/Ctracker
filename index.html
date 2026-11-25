@@ -1743,7 +1743,9 @@ try {
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded) { reloaded = true; location.reload() } });
   }
   // ask the browser not to clear Ctracker's data when space runs low
-  if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {});
+  // asked once only: Firefox shows a permission popup for this, so never nag after the first answer
+  let asked = false; try { asked = localStorage.getItem('ctracker.persistAsked') === '1' } catch(e) {}
+  if (!asked && navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => { if (p) return; try { localStorage.setItem('ctracker.persistAsked', '1') } catch(e) {} return navigator.storage.persist() }).catch(() => {});
 } catch(e) {}
 }
 </script>
